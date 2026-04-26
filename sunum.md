@@ -70,10 +70,34 @@ length()       // |v| = sqrt(x²+y²+z²)  — gerçek uzunluk
 length_squared()  // x²+y²+z²  — sqrt() olmadan, karşılaştırma için hızlı
 ```
 
+### Matematiksel Fonksiyonlar
+
+```cpp
+a.dot(b)          // a·b = ax*bx + ay*by + az*bz  → skaler, aydınlatma hesabı
+a.cross(b)        // a×b → ikisine dik yeni vektör, kamera eksenleri için
+a.normalize()     // yönü korur, uzunluğu 1 yapar → ışın yönleri ve normaller
+a.reflect(n)      // gelen ışın + yüzey normali → yansıyan ışın yönü
+Vec3::clamp(x,lo,hi)       // değeri [lo,hi] aralığında tutar → renk taşmasını önler
+Vec3::gamma_correct(v)     // sqrt(v) → lineer→gamma uzayı, monitör doğru gösterir
+```
+
+### Dot Product — Aydınlatma Kalbi
+Sonuç > 0: aynı yönde (ışık yüzeye vuruyor)
+Sonuç = 0: dik açı (yüzey kenarda, karanlık)
+Sonuç < 0: zıt yön (ışık arkadan, karanlık)
+
+### Cross Product — Kamera Koordinat Sistemi
+```
+right      = forward × world_up   // kameranın sağ yönü
+camera_up  = right × forward      // kameranın gerçek yukarısı
+```
+Bu üç vektörle her pikselin ışın yönü hesaplanır.
+
 ### Sunumda nasıl anlatırsın?
 "Nokta, vektör ve renk için ayrı sınıf yazmak yerine tek Vec3 sınıfı kullandım.
 double tercih ettim çünkü ışın hesapları zincirleniyor — float'ın 7 basamak
-hassasiyeti yanlış gölge hesaplarına yol açabilirdi."
+hassasiyeti yanlış gölge hesaplarına yol açabilirdi. Dot product aydınlatmanın,
+cross product kamera koordinat sisteminin temelidir."
 
 ---
 <!-- Yeni modüller buraya eklenecek -->
