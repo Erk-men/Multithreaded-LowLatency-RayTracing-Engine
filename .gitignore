@@ -11,12 +11,29 @@ test_sphere
 ray_tracer
 
 # Görüntü ve animasyon çıktıları
-output/*.ppm
-output/*.png
-animation/frame_*.ppm
-animation/output.mp4
+output/renders/*.ppm
+output/renders/*.png
+output/animation/frame_*.ppm
+output/timelapse/frame_*.ppm
+output/animation/output.mp4
+output/timelapse/t*.mp4
 
-# Benchmark sonuçları
+# Benchmark binary'leri
+raytracer
+raytracer_debug
+raytracer_fast
+raytracer_prof
+raytracer_O0
+raytracer_O2
+raytracer_O3
+raytracer_tsan
+raytracer_bench
+gmon.out
+
+# .superpowers geçici dosyaları
+.superpowers/
+
+# Benchmark sonuçları (ham CSV'ler)
 results/*.csv
 
 # Python cache
