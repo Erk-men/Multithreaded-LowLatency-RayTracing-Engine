@@ -50,3 +50,6 @@ __pycache__/
 
 # Build klasörü
 build/
+
+# Sunum notları (yerel tutulur)
+sunum.md
