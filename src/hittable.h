@@ -2,6 +2,10 @@
 #include "vec3.h"
 #include "ray.h"
 
+// Forward declaration — material.h'yı include etmeden Material* kullanmak için.
+// hittable.h → material.h → hittable.h döngüsel bağımlılığını önler.
+class Material;
+
 // =============================================================================
 // HitRecord — Kesişim Bilgisi
 //
@@ -14,6 +18,7 @@ struct HitRecord {
     Vec3   normal;      // Yüzey normali (her zaman normalize, ışına karşı bakan)
     double t;           // Işın parametresi — küçük t → kameraya yakın
     bool   front_face;  // Işın dışarıdan mı içeriden mi çarptı?
+    const Material* mat = nullptr;  // nullptr → Aşama 4'te Phong sabit renk kullanılır
 
     // Normal'i ışına göre ayarla.
     // Kural: normal HER ZAMAN ışına karşı baksın (dot(ray_dir, normal) < 0).
