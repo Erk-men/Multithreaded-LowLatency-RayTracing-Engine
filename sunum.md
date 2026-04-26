@@ -1,163 +1,79 @@
 # Sunum Notları — Çok İş Parçacıklı Işın İzleme Motoru
 **Enes F. Erkmen — 220309007**
 
-> Bu dosya her aşama tamamlandıktan sonra güncellenir.
-> Sunumda teknik detaylara hakim görünmek için buradan çalış.
+> Bu dosya her modül tamamlandıkça güncellenir.
+> Her bölüm "Sunumda nasıl anlatırsın?" sorusuna cevap verir.
 
 ---
 
-## Aşama 1: Vec3 ve Ray — Matematiksel Temel
+## Büyük Resim — Projenin Amacı
 
-### Ne Yaptık?
-`vec3.h` ve `ray.h` dosyalarını sıfırdan yazdık. Harici hiçbir kütüphane kullanmadık.
+Bu proje bir ray tracer yazmak **değil**, sistem programlama kavramlarını
+**ölçülebilir biçimde analiz etmektir.** Anlatı şöyle:
 
-### Neden Vec3 Tek Bir Tip?
+> "Önce naif bir çözüm yazdım → ölçtüm → sorunu gördüm → düzelttim → işte kanıtı."
 
-Ray tracing'de üç farklı kavram var: **nokta** (konum), **vektör** (yön), **renk** (RGB). Hepsi matematiksel olarak üç sayıdan oluşuyor. Tek bir `Vec3` tipi ikisi için de yeterli — fark sadece kavramsal.
-
-```cpp
-Point3 camera(0, 0,  0);    // kamera konumu
-Vec3   dir   (0, 0, -1);    // ışın yönü
-Color  red   (1, 0,  0);    // kırmızı renk
-// Hepsi Vec3 — aynı bellek düzeni, farklı anlam
-```
-
-### Dot Product — Neden Kritik?
-
-```
-dot(a, b) = ax·bx + ay·by + az·bz = |a||b|·cos(θ)
-```
-
-- θ = 0° → cos = 1.0 → ışık yüzeye dik geliyor → **maksimum parlaklık**
-- θ = 90° → cos = 0.0 → ışık yüzeye teğet → **karanlık**
-- θ > 90° → negatif → **gölge**
-
-Aydınlatma hesabında `dot(normal, ışık_yönü)` ifadesi yüzeyin ne kadar parlak görüneceğini belirliyor.
-
-### Normalize — Neden Şart?
-
-Dot product'ın `cos(θ)` vermesi için her iki vektörün uzunluğunun 1.0 olması gerekiyor. Bu yüzden tüm yön vektörleri (ışın yönü, yüzey normali) `normalize()` ile birim uzunluğa indiriliyor.
-
-```cpp
-static Vec3 normalize(const Vec3& v) {
-    return v / v.length();  // her bileşeni uzunluğa böl
-}
-```
-
-### Reflect — Ayna Yüzeyler İçin
-
-```
-reflect(d, n) = d - 2·dot(d, n)·n
-```
-
-Geometrik yorum: gelen ışının normal eksenindeki bileşenini ters çevir. Bu formülle reflective (ayna gibi) materyaller gerçekçi yansıma üretiyor.
-
-### Ray: r(t) = origin + t × direction
-
-Işın bir parametrik doğru. `t` arttıkça ışın ilerliyor:
-
-```cpp
-Point3 p = ray.at(5.0);  // ışın üzerinde 5 birim ileri
-```
-
-- `t = 0` → kameranın kendisi
-- `t > 0` → kameranın önü (anlamlı kesişimler)
-- `t < 0` → kameranın arkası (görmezden gelinir)
-
-### Test Çıktısı
-
-```
-dot(right, up)    = 0   ← dik açı, doğru
-dot(right, right) = 1   ← aynı yön, doğru
-cross(right, up)  = (0, 0, 1)   ← sağ el kuralı
-reflect: gelen (0.7, -0.7, 0) → yansıyan (0.7, 0.7, 0)
-r(5.0) = (0, 0, -5)   ← 5 birim ileri, doğru
-✓ Tüm testler geçti
-```
-
-### Sunumda Nasıl Anlatırsın?
-
-> *"Harici hiçbir kütüphane kullanmadım. Vec3 sınıfını sıfırdan yazdım çünkü ray tracing'de nokta, yön ve renk matematiksel olarak aynı yapı — üç float. dot product ile ışık açısını, cross product ile kamera koordinat sistemini, normalize ile birim vektörleri hesaplıyorum. Her operasyon için test yazdım ve doğruladım."*
+Dört versiyon:
+- **v1** → Tek thread (baseline, referans nokta)
+- **v2** → Thread-per-row (kasıtlı kötü tasarım — neden yanlış?)
+- **v3** → Thread Pool, tile-based (doğru tasarım)
+- **v4** → alignas(64) cache optimizasyonu (düşük seviye iyileştirme)
 
 ---
 
+## Modül 1 — Işın İzleme Nedir?
+
+### Temel Mantık
+Gerçek hayatta ışık: **Güneş → Nesne → Kamera**
+Bizim yaptığımız (backward ray tracing): **Kamera → Nesne → Işık kaynağı**
+
+Neden tersine çevirdik?
+Güneşten çıkan milyarlarca ışının yalnızca küçük bir kısmı kameraya ulaşır.
+Hepsini hesaplamak imkânsız. Kameradan fırlatırsak sadece
+**görüntüye katkıda bulunan ışınları** hesaplarız.
+
+### Neden Paralel?
+1280×720 = **921.600 piksel** = 921.600 bağımsız ışın hesabı.
+Her piksel birbirinden bağımsız → aynı anda hesaplanabilir → **threading'in temeli.**
+
+### Sunumda nasıl anlatırsın?
+"Her piksel için kameradan bir ışın fırlatıyorum. Bu ışın sahnedeki bir nesneye
+çarparsa o pikselin rengini o noktadan hesaplıyorum. 921.600 piksel birbirinden
+bağımsız olduğu için hepsini aynı anda paralel hesaplayabilirim — bu projenin
+threading kısmının temelini oluşturuyor."
+
 ---
 
-## Aşama 2: Küre Kesişimi ve İlk PPM Görüntü
+## Modül 2 — Vec3: 3D Matematik Temeli
 
-### Ne Yaptık?
-`ppm.h`, `hittable.h`, `sphere.h` dosyalarını yazdık. İlk görüntüyü render ettik: normal visualization ile iki küre.
-
-### Işın-Küre Kesişimi Matematiği
-
-Küre üzerindeki her nokta şu denklemi sağlar:
-
-```
-|P - C|² = R²
-```
-
-Işın `P = o + t*d` olduğundan yerine koyarsak ve `oc = o - C` dersek:
-
-```
-t²(d·d) + 2t(d·oc) + (oc·oc - R²) = 0
-```
-
-Bu bir ikinci dereceden denklem. Discriminant'a göre:
-- `Δ < 0` → kesişim yok (ışın küreyi ıssıyor)
-- `Δ = 0` → teğet
-- `Δ > 0` → 2 nokta, kameraya yakın olan (`t_min`) alınır
-
-**Optimizasyon:** `b = 2h` substitüsyonu yapılınca formül sadeleşiyor:
-```cpp
-double h = dot(d, oc);          // b/2
-double discriminant = h*h - a*c // b²-4ac yerine h²-ac
-double t = (-h - sqrt_d) / a;   // 2 ve 4 çarpanları iptal oldu
-```
-
-### HitRecord ve Hittable Soyutlaması
-
-Her nesne `hit()` metodunu uygular. Renderer nesne tipini bilmez, sadece `Hittable*` listesiyle çalışır:
+### Neden Vec3?
+Ray tracing'de üç farklı kavram var: **nokta** (konum), **vektör** (yön), **renk** (RGB).
+Hepsi matematiksel olarak `(x, y, z)` üçlüsü → tek sınıf yeterli.
 
 ```cpp
-for (const auto& obj : scene) {
-    if (obj->hit(ray, t_min, closest, rec)) { ... }
-}
+using Point3 = Vec3;  // 3D konum
+using Color  = Vec3;  // RGB renk [0,1]
 ```
 
-Bu sayede ileride düzlem, üçgen eklemek için renderer'a dokunmak gerekmez.
+### Neden double, float değil?
+Işın hesapları zincirlenir. float → 7 basamak hassasiyet.
+double → 15 basamak. Küçük hatalar katlanınca yanlış kesişimler oluşur.
 
-### Normal Visualization — İlk Görüntü
-
-Henüz ışık kaynağı yok. Yüzey normalini renk olarak gösteriyoruz:
-```
-normal.x → kırmızı (sola/sağa bakan yüzey)
-normal.y → yeşil   (aşağı/yukarı bakan yüzey)
-normal.z → mavi    (ileri/geri bakan yüzey)
-```
-Normal `[-1,1]` aralığında, `(n + 1) / 2` ile `[0,1]`'e map'leniyor.
-
-### Shadow Acne Problemi — `t_min = 0.001`
-
-Kesişim noktasında aynı yüzeyden yeni ışın atarken `t=0` noktasının kendine çarpmasını önlemek için `t_min = 0.001` kullanıyoruz. Floating point hatası yüzünden ışın tam olarak `t=0`'da değil `t=0.000001`'de başlayabilir — bu küçük offset bunu çözer.
-
-### Arka Plan: Linear Interpolation (Lerp)
-
+### Önemli Operatörler
 ```cpp
-double t = 0.5 * (ray.direction.y + 1.0);  // y: [-1,1] → [0,1]
-Color bg  = white * (1.0 - t) + blue * t;  // lerp formülü
+a + b          // vektör toplama: yön/renk birleştirme
+a - b          // vektör çıkarma
+-a             // yön tersine çevirme
+a * 2.0        // skaler ile ölçekleme
+a * b          // bileşen bazlı: renk × renk hesabı
+length()       // |v| = sqrt(x²+y²+z²)  — gerçek uzunluk
+length_squared()  // x²+y²+z²  — sqrt() olmadan, karşılaştırma için hızlı
 ```
 
-t=0 (aşağı) → beyaz, t=1 (yukarı) → mavi. Klasik gökyüzü gradyanı.
+### Sunumda nasıl anlatırsın?
+"Nokta, vektör ve renk için ayrı sınıf yazmak yerine tek Vec3 sınıfı kullandım.
+double tercih ettim çünkü ışın hesapları zincirleniyor — float'ın 7 basamak
+hassasiyeti yanlış gölge hesaplarına yol açabilirdi."
 
-### Üretilen Görüntü
-
-- 800×450 piksel, 16:9 aspect ratio
-- Normal visualization ile renkli küre
-- Mavi→beyaz gradient arka plan
-- Yeşil zemin küresi (r=100, dev küre = düz zemin görünümü)
-
-### Sunumda Nasıl Anlatırsın?
-
-> *"İkinci aşamada ışın-küre kesişimini türettim. Küre denklemini ışın parametrik denklemine koyunca ikinci dereceden bir denklem çıkıyor. Discriminant negatifse ışın küreyi ıssıyor, pozitifse iki kesişim noktası var ve kameraya yakın olanı alıyorum. Hittable soyutlamasıyla renderer nesne tipine bağımlı değil — ileride yeni geometri eklemek için sadece yeni bir sınıf yazmak yeterli."*
-
-<!-- Sonraki aşamalar buraya eklenecek -->
+---
+<!-- Yeni modüller buraya eklenecek -->
