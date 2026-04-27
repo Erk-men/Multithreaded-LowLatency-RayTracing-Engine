@@ -124,8 +124,8 @@ make clean
 | 1 | Vec3 — vektör, nokta, renk matematiği | Tamamlandı |
 | 2 | Ray — parametrik ışın | Tamamlandı |
 | 3 | Hittable — soyut nesne arayüzü | Tamamlandı |
-| 4 | Sphere — ışın-küre kesişim geometrisi | Devam ediyor |
-| 4 | PPM, Camera — görüntü çıktısı ve viewport | Bekliyor |
+| 4 | Sphere — ışın-küre kesişim geometrisi | Tamamlandı |
+| 5 | PPM, Camera — görüntü çıktısı ve viewport | Bekliyor |
 | 5 | Renderer v1 — tek thread baseline | Bekliyor |
 | 6 | Renderer v2 — thread-per-row (naif) | Bekliyor |
 | 7 | Renderer v3 — Thread Pool, tile-based | Bekliyor |
