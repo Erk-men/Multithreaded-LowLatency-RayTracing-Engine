@@ -2,11 +2,12 @@
 #include "camera.h"
 #include "ppm.h"
 #include "Sphere.h"
+#include "scene.h"
 
 
-Color ray_color(const Ray& r, const Sphere& sphere) {
+Color ray_color(const Ray& r, const Hittable& world) {
     HitRecord rec; // Çarpışma bilgilerini tutacak yapı
-    if (sphere.hit(r, 0.0, 1e9, rec)) { 
+    if (world.hit(r, 0.0, 1e9, rec)) { 
         return 0.5 * (rec.normal + Vec3(1, 1, 1)); // Çarpışma varsa, normal vektörünü renk olarak döndür (0.5 ile ölçeklenmiş)
     }
     Vec3 unit_direction = r.direction.normalize(); // Işının yönünü birim vektöre dönüştür
@@ -20,6 +21,10 @@ int main() {
     Camera cam; // Kamera oluştur
 
     Sphere sphere(Vec3(0, 0, -1), 0.5); // Küre oluştur
+    Scene scene; // Sahne oluştur
+    scene.add(&sphere); // Küreyi sahneye ekle
+    Sphere ground(Vec3(0, -100.5, -1), 100); // Zemin küresi oluştur
+    scene.add(&ground); // Zemini sahneye ekle
     FILE* out = fopen("output/renders/sphere.ppm", "w"); // PPM dosyası oluştur
     write_ppm_header(out, width, height); // PPM başlığını yaz
     for (int j = height - 1; j >= 0; --j) { // Satırları tersten yaz (PPM formatı için)
@@ -27,7 +32,7 @@ int main() {
             double u = double(i) / (width - 1); // Yatay koordinat [0,1] aralığında
             double v = double(j) / (height - 1); // Dikey koordinat [0,1] aralığında
             Ray r = cam.get_ray(u, v); // Kameradan piksele giden ışını al
-            Color pixel_color = ray_color(r, sphere); // Işının rengini hesapla
+            Color pixel_color = ray_color(r, scene); // Işığın rengini hesapla
             write_color(out, pixel_color); // Rengi PPM dosyasına yaz
         }
     }
