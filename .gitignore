@@ -56,3 +56,6 @@ build/
 
 # Sunum notları (yerel tutulur)
 sunum.md
+
+# Oturum bağlam dosyası (yerel tutulur)
+CLAUDE.md
