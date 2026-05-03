@@ -33,6 +33,9 @@ gmon.out
 # .superpowers geçici dosyaları
 .superpowers/
 
+# Superpowers plan dosyaları
+docs/superpowers/
+
 # Benchmark sonuçları (ham CSV'ler)
 results/*.csv
 
