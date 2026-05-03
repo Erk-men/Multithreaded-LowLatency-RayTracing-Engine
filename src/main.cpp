@@ -13,7 +13,7 @@ int main() {
     int height = static_cast<int>(width / (16.0 / 9.0)); // Görüntü yüksekliği, 16:9 oranına göre hesaplanır
     Camera cam; // Kamera oluştur
 
-    FILE* f = fopen("output.ppm", "w"); // PPM dosyası oluştur
+    FILE* f = fopen("output/renders/gradient.ppm", "w"); // PPM dosyası oluştur
     write_ppm_header(f, width, height); // PPM başlığını yaz
 
     for (int j = height-1; j>= 0; --j) { // Her satır için (üstten alta)
@@ -26,5 +26,5 @@ int main() {
         }
     }
     fclose(f); // Dosyayı kapat
-    printf("PPM dosyası oluşturuldu: output.ppm\n");
+    printf("PPM dosyasi olusturuldu: output/renders/gradient.ppm\n");
 }
