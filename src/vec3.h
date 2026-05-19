@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <random>
 
 class Vec3 {
 public:
@@ -50,6 +51,16 @@ public:
     static double gamma_correct(double linear) {                                          
       return std::sqrt(clamp(linear, 0.0, 1.0));                                        
     }   
+
+    static Vec3 random_unit_vector() {
+        static thread_local std::mt19937 rng(std::random_device{}());
+        std::uniform_real_distribution<double> dist(-1.0, 1.0);
+        while (true) {
+            Vec3 p(dist(rng), dist(rng), dist(rng));
+            if (p.length_squared() < 1.0)
+                return p.normalize();
+        }
+    }
 };
 
 // 2.0 * v yazımına izin ver (v * 2.0 zaten var, bu simetri için)
