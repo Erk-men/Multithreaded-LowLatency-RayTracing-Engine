@@ -3,6 +3,7 @@
 #include "Sphere.h"
 #include "scene.h"
 #include "renderer.h"
+#include "renderer_v2.h"
 #include "material.h"
 #include "ppm.h"
 
@@ -77,19 +78,41 @@ int main() {
     Lambertian mat_sol(Color(0.1, 0.2, 0.8));
     Metal      mat_sag(Color(0.8, 0.8, 0.8), 0.1);
     Lambertian mat_ust(Color(0.8, 0.6, 0.2));
-    FILE* out = fopen("output.ppm", "w"); // Render sonucunu output.ppm dosyasına yazmak için dosya açılır
+
+    // OUTPUT LAR
+    // v1 için
+    //FILE* out = fopen("output_v1.ppm", "w"); // Render sonucunu output.ppm dosyasına yazmak için dosya açılır
+    
+    // v2 için
+    FILE* out = fopen("output_v2.ppm", "w"); // Render sonucunu output_v2.ppm dosyasına yazmak için dosya açılır
+
     int width = 1280; // Görüntü genişliği, 16:9 oranına göre hesaplanır
     int height = static_cast<int>(width / (16.0 / 9.0)); // Görüntü yüksekliği, 16:9 oranına göre hesaplanır
     Camera cam; // Kamera oluştur
     Scene scene; // Sahne oluştur
-    //build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
+
+    // BUILD SCENE LER
+
+    build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
     //build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Orta sahne oluştur
-    build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); // Karmaşık sahne oluştur
-    // Renderer oluştur: 1280x720 , simple için 16 5, medium için 16 10, complex için 64 15 önerilir
-    Renderer renderer(width, height, 64, 15); 
-    long long ms = renderer.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
-    fprintf(stderr, "Render süresi: %lld ms\n", ms); // Render süresini standart hataya yaz
+    //build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); // Karmaşık sahne oluştur
     
+    // RENDERERLER 
+
+    // RENDERER V1
+
+    // Renderer v1 oluştur: 1280x720 , simple için 16 5, medium için 16 10, complex için 64 15 önerilir
+    //Renderer renderer(width, height, 64, 15); 
+    //long long ms = renderer.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
+    //fprintf(stderr, "Render süresi: %lld ms\n", ms); // Render süresini standart hataya yaz
+    //fclose(out); // Dosyayı kapat
+
+    // RENDERER V2
+    RendererV2 renderer_v2(width, height, 16, 5);
+    long long ms_v2 = renderer_v2.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
+    fprintf(stderr, "Render süresi (V2): %lld ms\n", ms_v2); // Render süresini standart hataya yaz
     fclose(out); // Dosyayı kapat
+    
+    
     return 0;
 }
