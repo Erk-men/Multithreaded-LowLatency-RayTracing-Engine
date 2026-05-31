@@ -1,4 +1,4 @@
-version,scene,optimization,time_ms
-v1,simple,O0,20230
-v1,simple,O2,1886
-v1,simple,O3,1431
+version,scene,optimization,time_ms,instructions,cycles,ipc,branch_misses,context_switches,peak_heap_kb,gprof_top1_func,gprof_top1_pct
+v1,simple,O0,20230,92647116375,93983590622,0.99,121289682,251,76.52,generate_canonical,20.66
+v1,simple,O2,1886,20350366463,8846345120,2.30,17770927,20,76.52,generate_canonical,34.55
+v1,simple,O3,1431,17163741111,6687131517,2.57,17280336,34,76.52,Sphere::hit,39.47
