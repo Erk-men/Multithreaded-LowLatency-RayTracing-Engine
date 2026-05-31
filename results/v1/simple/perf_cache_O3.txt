@@ -1,0 +1,14 @@
+Rendering time: 2090 ms
+Render süresi: 2090 ms
+
+ Performance counter stats for './raytracer_prof_O3':
+
+           274,586      L1-icache-load-misses                                                 
+         4,636,912      L1-dcache-load-misses                                                 
+
+       2.101867437 seconds time elapsed
+
+       2.080970000 seconds user
+       0.012993000 seconds sys
+
+
