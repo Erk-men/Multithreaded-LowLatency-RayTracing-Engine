@@ -1,7 +1,7 @@
 version, scene , optimization, time_ms, user_ms, sys_ms, instructions, cycles, ipc, branch_misses, context_switches, peak_heap_kb, L1_icache_misses, L1_dcache_misses
 v2     , simple, O0          , 2085   , 23068  , 116   , 93265156639 , 106441795703, 0.88, 125743070  , 11947           , 21924       , 1052526         , 57636123
 v2     , simple, O2          , 331    , 2503   , 60    , 20660732829 , 11910442479, 1.73, 22073100   , 1326            , 21703       , 374823          , 12870039
-v2     , simple, O3          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
+v2     , simple, O3          , 296    , 1870   , 73    , 17444781520 , 8969492158, 1.94, 21521643    , 1110            , 21703       , 388448          , 13860511
 v2     , medium, O0          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
 v2     , medium, O2          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
 v2     , medium, O3          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD

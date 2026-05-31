@@ -1,0 +1,14 @@
+# started on Sun May 31 12:05:05 2026
+
+
+ Performance counter stats for './raytracer_v2_O3':
+
+           388,448      L1-icache-load-misses                                                 
+        13,860,511      L1-dcache-load-misses                                                 
+
+       0.296487746 seconds time elapsed
+
+       1.859091000 seconds user
+       0.094841000 seconds sys
+
+
