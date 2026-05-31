@@ -1,22 +1,22 @@
-# started on Sun May 31 08:18:10 2026
+# started on Sun May 31 08:49:58 2026
 
 
  Performance counter stats for './raytracer_prof_O2':
 
-    76,686,252,855      task-clock                       #    1.000 CPUs utilized             
-             2,317      context-switches                 #   30.214 /sec                      
-               243      cpu-migrations                   #    3.169 /sec                      
-               151      page-faults                      #    1.969 /sec                      
- 1,137,487,992,362      instructions                     #    3.20  insn per cycle            
+   327,269,679,471      task-clock                       #    1.000 CPUs utilized             
+             7,699      context-switches                 #   23.525 /sec                      
+               636      cpu-migrations                   #    1.943 /sec                      
+               152      page-faults                      #    0.464 /sec                      
+ 4,685,633,558,902      instructions                     #    3.09  insn per cycle            
                                                   #    0.00  stalled cycles per insn   
-   355,721,669,813      cycles                           #    4.639 GHz                       
-     1,729,813,932      stalled-cycles-frontend          #    0.49% frontend cycles idle      
-   143,740,946,908      branches                         #    1.874 G/sec                     
-       202,448,666      branch-misses                    #    0.14% of all branches           
+ 1,518,264,413,012      cycles                           #    4.639 GHz                       
+     6,996,381,124      stalled-cycles-frontend          #    0.46% frontend cycles idle      
+   591,802,105,214      branches                         #    1.808 G/sec                     
+       825,811,984      branch-misses                    #    0.14% of all branches           
 
-      76.719233224 seconds time elapsed
+     327.361135921 seconds time elapsed
 
-      76.635478000 seconds user
-       0.047982000 seconds sys
+     327.182180000 seconds user
+       0.073986000 seconds sys
 
 
