@@ -1,0 +1,106 @@
+--------------------------------------------------------------------------------
+Command:            ./raytracer_prof_O2
+Massif arguments:   --massif-out-file=results/v1/medium/massif_O2.out
+ms_print arguments: results/v1/medium/massif_O2.out
+--------------------------------------------------------------------------------
+
+
+    KB
+105.2^:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::#
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+   0 +----------------------------------------------------------------------->Gi
+     0                                                                   69.85
+
+Number of snapshots: 19
+ Detailed snapshots: [6, 13 (peak)]
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  0              0                0                0             0            0
+  1      1,882,167           29,336           29,320            16            0
+  2      1,975,357          103,072          103,048            24            0
+  3      1,979,696          103,560          103,520            40            0
+  4      1,980,367          103,584          103,528            56            0
+  5      1,980,547          103,608          103,544            64            0
+  6      1,980,642          103,608          103,544            64            0
+99.94% (103,544B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->71.16% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->71.16% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->71.16% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->71.16% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->71.16% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->28.30% (29,320B) 0x4C3B04F: monstartup (gmon.c:175)
+| ->28.30% (29,320B) 0x10A6D0: __gmon_start__ (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|   ->28.30% (29,320B) 0x4844015: ??? (in /usr/libexec/valgrind/vgpreload_massif-amd64-linux.so)
+|     ->28.30% (29,320B) 0x40058C5: call_init (dl-init.c:37)
+|       ->28.30% (29,320B) 0x40058C5: _dl_init (dl-init.c:88)
+|         ->28.30% (29,320B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|           
+->00.48% (496B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  7      1,980,642          103,584          103,536            48            0
+  8      1,980,800          103,624          103,568            56            0
+  9      1,980,893          103,600          103,552            48            0
+ 10      1,981,067          103,672          103,616            56            0
+ 11      1,981,161          103,632          103,584            48            0
+ 12      1,989,020          107,736          107,680            56            0
+ 13 75,005,697,608          107,736          107,680            56            0
+99.95% (107,680B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->68.43% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->68.43% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->68.43% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->68.43% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->68.43% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->27.21% (29,320B) 0x4C3B04F: monstartup (gmon.c:175)
+| ->27.21% (29,320B) 0x10A6D0: __gmon_start__ (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|   ->27.21% (29,320B) 0x4844015: ??? (in /usr/libexec/valgrind/vgpreload_massif-amd64-linux.so)
+|     ->27.21% (29,320B) 0x40058C5: call_init (dl-init.c:37)
+|       ->27.21% (29,320B) 0x40058C5: _dl_init (dl-init.c:88)
+|         ->27.21% (29,320B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|           
+->03.80% (4,096B) 0x4B931B4: _IO_file_doallocate (filedoalloc.c:101)
+| ->03.80% (4,096B) 0x4BA3523: _IO_doallocbuf (genops.c:347)
+|   ->03.80% (4,096B) 0x4BA0F8F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:745)
+|     ->03.80% (4,096B) 0x4BA1AAE: _IO_new_file_xsputn (fileops.c:1244)
+|       ->03.80% (4,096B) 0x4BA1AAE: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1197)
+|         ->03.80% (4,096B) 0x4B6ECC8: __printf_buffer_flush_to_file (printf_buffer_to_file.c:59)
+|           ->03.80% (4,096B) 0x4B6ECC8: __printf_buffer_to_file_done (printf_buffer_to_file.c:120)
+|             ->03.80% (4,096B) 0x4B79742: __vfprintf_internal (vfprintf-internal.c:1545)
+|               ->03.80% (4,096B) 0x4C44CF2: __fprintf_chk (fprintf_chk.c:33)
+|                 ->03.80% (4,096B) 0x10BE9F: Renderer::render(Scene const&, Camera const&, _IO_FILE*) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|                   ->03.80% (4,096B) 0x10A5A7: main (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|                     
+->00.50% (536B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 14 75,005,697,608          103,632          103,584            48            0
+ 15 75,005,697,746          103,144          103,112            32            0
+ 16 75,005,697,868          103,072          103,048            24            0
+ 17 75,005,733,868           73,736           73,728             8            0
+ 18 75,005,745,836                0                0             0            0

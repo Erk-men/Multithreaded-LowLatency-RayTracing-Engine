@@ -1,0 +1,22 @@
+# started on Sun May 31 08:02:16 2026
+
+
+ Performance counter stats for './raytracer_prof_O3':
+
+     5,312,684,675      task-clock                       #    0.999 CPUs utilized             
+               111      context-switches                 #   20.893 /sec                      
+                61      cpu-migrations                   #   11.482 /sec                      
+               152      page-faults                      #   28.611 /sec                      
+    58,842,990,994      instructions                     #    2.39  insn per cycle            
+                                                  #    0.01  stalled cycles per insn   
+    24,620,788,280      cycles                           #    4.634 GHz                       
+       423,162,275      stalled-cycles-frontend          #    1.72% frontend cycles idle      
+     6,988,098,392      branches                         #    1.315 G/sec                     
+        52,004,856      branch-misses                    #    0.74% of all branches           
+
+       5.320274871 seconds time elapsed
+
+       5.283546000 seconds user
+       0.030003000 seconds sys
+
+

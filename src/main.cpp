@@ -82,10 +82,10 @@ int main() {
     int height = static_cast<int>(width / (16.0 / 9.0)); // Görüntü yüksekliği, 16:9 oranına göre hesaplanır
     Camera cam; // Kamera oluştur
     Scene scene; // Sahne oluştur
-    build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
-    //build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Orta sahne oluştur
+    //build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
+    build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Orta sahne oluştur
     //build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres, lambertians, lambertian_count); // Karmaşık sahne oluştur
-    Renderer renderer(width, height, 16, 5); // Renderer oluştur: 1280x720 çözünürlük, 16 örnek/piksel, maksimum 5 yansıma derinliği    
+    Renderer renderer(width, height, 16, 10); // Renderer oluştur: 1280x720   
     long long ms = renderer.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
     fprintf(stderr, "Render süresi: %lld ms\n", ms); // Render süresini standart hataya yaz
     
