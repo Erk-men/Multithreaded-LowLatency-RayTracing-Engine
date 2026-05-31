@@ -36,8 +36,9 @@ gmon.out
 # Superpowers plan dosyaları
 docs/superpowers/
 
-# Benchmark sonuçları (ham CSV'ler)
+# Benchmark sonuçları (ham CSV'ler — sadece kök dizin)
 results/*.csv
+!results/comparison.csv
 
 # Python cache
 __pycache__/

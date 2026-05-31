@@ -1,0 +1,13 @@
+version, scene , optimization, time_ms, user_ms, sys_ms, speedup_vs_v1
+v1     , simple, O2          , 1886   , N/A    , N/A   , 1.00x
+v1     , medium, O2          , 7068   , N/A    , N/A   , 1.00x
+v1     , heavy , O2          , 327182 , N/A    , N/A   , 1.00x
+v2     , simple, O2          , 339    , 2483   , 76    , 5.56x
+v2     , medium, O2          , TBD    , TBD    , TBD   , TBD
+v2     , heavy , O2          , TBD    , TBD    , TBD   , TBD
+v3     , simple, O2          , TBD    , TBD    , TBD   , TBD
+v3     , medium, O2          , TBD    , TBD    , TBD   , TBD
+v3     , heavy , O2          , TBD    , TBD    , TBD   , TBD
+v4     , simple, O2          , TBD    , TBD    , TBD   , TBD
+v4     , medium, O2          , TBD    , TBD    , TBD   , TBD
+v4     , heavy , O2          , TBD    , TBD    , TBD   , TBD
