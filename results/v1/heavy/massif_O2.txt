@@ -1,0 +1,193 @@
+--------------------------------------------------------------------------------
+Command:            ./raytracer_prof_O2
+Massif arguments:   --massif-out-file=results/v1/heavy/massif_O2.out
+ms_print arguments: results/v1/heavy/massif_O2.out
+--------------------------------------------------------------------------------
+
+
+    KB
+107.2^:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::#
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+   0 +----------------------------------------------------------------------->Ti
+     0                                                                   1.034
+
+Number of snapshots: 31
+ Detailed snapshots: [6, 16, 19, 22, 25 (peak)]
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  0              0                0                0             0            0
+  1      1,882,167           29,368           29,360             8            0
+  2      1,975,357          103,104          103,088            16            0
+  3      1,979,697          103,592          103,560            32            0
+  4      1,980,445          103,616          103,568            48            0
+  5      1,980,625          103,640          103,584            56            0
+  6      1,980,720          103,640          103,584            56            0
+99.95% (103,584B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->71.14% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->71.14% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->71.14% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->71.14% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->71.14% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->28.33% (29,360B) 0x4C3B04F: monstartup (gmon.c:175)
+| ->28.33% (29,360B) 0x10A6E0: __gmon_start__ (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|   ->28.33% (29,360B) 0x4844015: ??? (in /usr/libexec/valgrind/vgpreload_massif-amd64-linux.so)
+|     ->28.33% (29,360B) 0x40058C5: call_init (dl-init.c:37)
+|       ->28.33% (29,360B) 0x40058C5: _dl_init (dl-init.c:88)
+|         ->28.33% (29,360B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|           
+->00.48% (496B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  7      1,980,720          103,616          103,576            40            0
+  8      1,980,878          103,656          103,608            48            0
+  9      1,980,971          103,632          103,592            40            0
+ 10      1,981,145          103,704          103,656            48            0
+ 11      1,981,239          103,664          103,624            40            0
+ 12      1,983,338          103,800          103,752            48            0
+ 13      1,983,432          103,728          103,688            40            0
+ 14      1,987,472          103,992          103,944            48            0
+ 15      1,987,576          103,856          103,816            40            0
+ 16      1,995,523          104,376          104,328            48            0
+99.95% (104,328B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->70.64% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->70.64% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->70.64% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->70.64% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->70.64% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->28.13% (29,360B) 0x4C3B04F: monstartup (gmon.c:175)
+| ->28.13% (29,360B) 0x10A6E0: __gmon_start__ (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|   ->28.13% (29,360B) 0x4844015: ??? (in /usr/libexec/valgrind/vgpreload_massif-amd64-linux.so)
+|     ->28.13% (29,360B) 0x40058C5: call_init (dl-init.c:37)
+|       ->28.13% (29,360B) 0x40058C5: _dl_init (dl-init.c:88)
+|         ->28.13% (29,360B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|           
+->01.19% (1,240B) in 2 places, all below massif's threshold (1.00%)
+  
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 17      1,995,635          104,112          104,072            40            0
+ 18      2,011,403          105,144          105,096            48            0
+ 19      2,011,562          105,144          105,096            48            0
+99.95% (105,096B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->70.12% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->70.12% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->70.12% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->70.12% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->70.12% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->27.92% (29,360B) 0x4C3B04F: monstartup (gmon.c:175)
+| ->27.92% (29,360B) 0x10A6E0: __gmon_start__ (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|   ->27.92% (29,360B) 0x4844015: ??? (in /usr/libexec/valgrind/vgpreload_massif-amd64-linux.so)
+|     ->27.92% (29,360B) 0x40058C5: call_init (dl-init.c:37)
+|       ->27.92% (29,360B) 0x40058C5: _dl_init (dl-init.c:88)
+|         ->27.92% (29,360B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|           
+->01.46% (1,536B) 0x10B369: void std::vector<Hittable*, std::allocator<Hittable*> >::_M_realloc_insert<Hittable* const&>(__gnu_cxx::__normal_iterator<Hittable**, std::vector<Hittable*, std::allocator<Hittable*> > >, Hittable* const&) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| ->01.46% (1,536B) 0x10ADCB: build_scene_complex(Scene&, Lambertian&, Lambertian&, Lambertian&, Metal&, Lambertian&, Sphere*, int&, Lambertian*, int&) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| | ->01.46% (1,536B) 0x10A58D: main (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| |   
+| ->00.00% (0B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->00.45% (472B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 20      2,011,562          104,624          104,584            40            0
+ 21      2,042,987          106,680          106,632            48            0
+ 22      2,043,194          106,680          106,632            48            0
+99.96% (106,632B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->69.11% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->69.11% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->69.11% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->69.11% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->69.11% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->27.52% (29,360B) 0x4C3B04F: monstartup (gmon.c:175)
+| ->27.52% (29,360B) 0x10A6E0: __gmon_start__ (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|   ->27.52% (29,360B) 0x4844015: ??? (in /usr/libexec/valgrind/vgpreload_massif-amd64-linux.so)
+|     ->27.52% (29,360B) 0x40058C5: call_init (dl-init.c:37)
+|       ->27.52% (29,360B) 0x40058C5: _dl_init (dl-init.c:88)
+|         ->27.52% (29,360B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|           
+->02.88% (3,072B) 0x10B369: void std::vector<Hittable*, std::allocator<Hittable*> >::_M_realloc_insert<Hittable* const&>(__gnu_cxx::__normal_iterator<Hittable**, std::vector<Hittable*, std::allocator<Hittable*> > >, Hittable* const&) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| ->02.88% (3,072B) 0x10ADCB: build_scene_complex(Scene&, Lambertian&, Lambertian&, Lambertian&, Metal&, Lambertian&, Sphere*, int&, Lambertian*, int&) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| | ->02.88% (3,072B) 0x10A58D: main (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| |   
+| ->00.00% (0B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->00.44% (472B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 23      2,043,194          105,648          105,608            40            0
+ 24      2,085,756          109,752          109,704            48            0
+ 25 1,136,649,779,248          109,752          109,704            48            0
+99.96% (109,704B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->67.18% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->67.18% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->67.18% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->67.18% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->67.18% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->26.75% (29,360B) 0x4C3B04F: monstartup (gmon.c:175)
+| ->26.75% (29,360B) 0x10A6E0: __gmon_start__ (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|   ->26.75% (29,360B) 0x4844015: ??? (in /usr/libexec/valgrind/vgpreload_massif-amd64-linux.so)
+|     ->26.75% (29,360B) 0x40058C5: call_init (dl-init.c:37)
+|       ->26.75% (29,360B) 0x40058C5: _dl_init (dl-init.c:88)
+|         ->26.75% (29,360B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|           
+->03.73% (4,096B) 0x4B931B4: _IO_file_doallocate (filedoalloc.c:101)
+| ->03.73% (4,096B) 0x4BA3523: _IO_doallocbuf (genops.c:347)
+|   ->03.73% (4,096B) 0x4BA0F8F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:745)
+|     ->03.73% (4,096B) 0x4BA1AAE: _IO_new_file_xsputn (fileops.c:1244)
+|       ->03.73% (4,096B) 0x4BA1AAE: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1197)
+|         ->03.73% (4,096B) 0x4B6ECC8: __printf_buffer_flush_to_file (printf_buffer_to_file.c:59)
+|           ->03.73% (4,096B) 0x4B6ECC8: __printf_buffer_to_file_done (printf_buffer_to_file.c:120)
+|             ->03.73% (4,096B) 0x4B79742: __vfprintf_internal (vfprintf-internal.c:1545)
+|               ->03.73% (4,096B) 0x4C44CF2: __fprintf_chk (fprintf_chk.c:33)
+|                 ->03.73% (4,096B) 0x10BEAF: Renderer::render(Scene const&, Camera const&, _IO_FILE*) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|                   ->03.73% (4,096B) 0x10A5BD: main (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+|                     
+->01.87% (2,048B) 0x10B369: void std::vector<Hittable*, std::allocator<Hittable*> >::_M_realloc_insert<Hittable* const&>(__gnu_cxx::__normal_iterator<Hittable**, std::vector<Hittable*, std::allocator<Hittable*> > >, Hittable* const&) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| ->01.87% (2,048B) 0x10ADCB: build_scene_complex(Scene&, Lambertian&, Lambertian&, Lambertian&, Metal&, Lambertian&, Sphere*, int&, Lambertian*, int&) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| | ->01.87% (2,048B) 0x10A58D: main (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_prof_O2)
+| |   
+| ->00.00% (0B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->00.43% (472B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 26 1,136,649,779,248          105,648          105,608            40            0
+ 27 1,136,649,779,386          105,160          105,136            24            0
+ 28 1,136,649,779,508          103,104          103,088            16            0
+ 29 1,136,649,815,633           73,736           73,728             8            0
+ 30 1,136,649,827,601                0                0             0            0
