@@ -1,0 +1,22 @@
+Rendering time: 1438 ms
+Render süresi: 1438 ms
+
+ Performance counter stats for './raytracer_O3':
+
+     1,443,076,083      task-clock                       #    0.996 CPUs utilized             
+                34      context-switches                 #   23.561 /sec                      
+                17      cpu-migrations                   #   11.780 /sec                      
+               141      page-faults                      #   97.708 /sec                      
+    17,163,741,111      instructions                     #    2.57  insn per cycle            
+                                                  #    0.01  stalled cycles per insn   
+     6,687,131,517      cycles                           #    4.634 GHz                       
+        99,521,826      stalled-cycles-frontend          #    1.49% frontend cycles idle      
+     1,548,499,081      branches                         #    1.073 G/sec                     
+        17,280,336      branch-misses                    #    1.12% of all branches           
+
+       1.448796787 seconds time elapsed
+
+       1.426656000 seconds user
+       0.017007000 seconds sys
+
+

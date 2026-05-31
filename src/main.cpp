@@ -1,41 +1,94 @@
 #include <cstdio>
 #include "camera.h"
-#include "ppm.h"
 #include "Sphere.h"
 #include "scene.h"
+#include "renderer.h"
+#include "material.h"
+#include "ppm.h"
 
 
-Color ray_color(const Ray& r, const Hittable& world) {
-    HitRecord rec; // Çarpışma bilgilerini tutacak yapı
-    if (world.hit(r, 0.0, 1e9, rec)) { 
-        return 0.5 * (rec.normal + Vec3(1, 1, 1)); // Çarpışma varsa, normal vektörünü renk olarak döndür (0.5 ile ölçeklenmiş)
+void build_scene_simple(Scene& scene, 
+                        Lambertian& mat_zemin, 
+                        Lambertian& mat_orta,
+                        Sphere* spheres,
+                        int& sphere_count) {
+    // 2 küre: merkez + zemin
+    spheres[sphere_count++] = Sphere(Vec3(0, -100.5, -1), 100, &mat_zemin); // Zemin küresi oluştur ve diziye ekle
+    scene.add(&spheres[sphere_count - 1]); // Zemini sahneye ekle
+    spheres[sphere_count++] = Sphere(Vec3(0, 0, -1), 0.5, &mat_orta); // Orta küre oluştur ve diziye ekle
+    scene.add(&spheres[sphere_count - 1]); // Orta küreyi sahneye ekle
+}
+
+void build_scene_medium(Scene& scene, 
+                        Lambertian& mat_zemin, 
+                        Lambertian& mat_orta, 
+                        Lambertian& mat_sol, 
+                        Metal& mat_sag,
+                        Lambertian& mat_ust, 
+                        int& sphere_count,
+                        Sphere* spheres) {
+    // 5 küre: 3 Lambertian + zemin
+    spheres[sphere_count++] = Sphere(Vec3(0, -100.5, -1), 100, &mat_zemin); // Zemin küresi oluştur ve diziye ekle
+    scene.add(&spheres[sphere_count - 1]); // Zemini sahneye ekle
+    spheres[sphere_count++] = Sphere(Vec3(0, 0, -1), 0.5, &mat_orta); // Orta küre oluştur ve diziye ekle
+    scene.add(&spheres[sphere_count - 1]); // Orta küreyi sahneye ekle
+    spheres[sphere_count++] = Sphere(Vec3(-1, 0, -1), 0.5, &mat_sol); // Sol küre oluştur ve diziye ekle
+    scene.add(&spheres[sphere_count - 1]); // Sol küreyi sahneye ekle
+    spheres[sphere_count++] = Sphere(Vec3(1, 0, -1), 0.5, &mat_sag); // Sağ küre oluştur ve diziye ekle
+    scene.add(&spheres[sphere_count - 1]); // Sağ küreyi sahneye ekle
+    spheres[sphere_count++] = Sphere(Vec3(0, 1, -1), 0.5, &mat_ust); // Üst küre oluştur ve diziye ekle
+    scene.add(&spheres[sphere_count - 1]); // Üst küreyi sahneye ekle
+}
+    
+
+void build_scene_complex(Scene& scene, 
+                        Lambertian& mat_zemin, 
+                        Lambertian& mat_orta, 
+                        Lambertian& mat_sol, 
+                        Metal& mat_sag,
+                        Lambertian& mat_ust, 
+                        Sphere* spheres,
+                        int& sphere_count,
+                        Lambertian* lambertians,
+                        int& lambertian_count) {
+    // 200 küre: 5 ana + 195 rastgele dağıtılmış küçük küre
+    build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Önce orta sahneyi oluştur
+    for (int i = 0; i < 195; ++i) {
+        double x = -5.0 + (rand() / (double)RAND_MAX) * 10.0; // -5 ile 5 arasında rastgele x koordinatı
+        double y = -0.5 + (rand() / (double)RAND_MAX) * 2.0; // -0.5 ile 4.5 arasında rastgele y
+        double z = -1.0 - (rand() / (double)RAND_MAX) * 10.0; // -1 ile -11 arasında rastgele z koordinatı
+        double r = 0.1 + (rand() / (double)RAND_MAX) * 0.4; // 0.1 ile 0.5 arasında rastgele yarıçap
+        lambertians[lambertian_count++] = Lambertian(Color(
+            rand() / (double)RAND_MAX, // 0 ile 1 arasında rastgele kırmızı
+            rand() / (double)RAND_MAX, // 0 ile 1 arasında rastgele yeşil
+            rand() / (double)RAND_MAX));  // 0 ile 1 arasında rastgele mavi
+        spheres[sphere_count++] = Sphere(Vec3(x, y, z), r, &lambertians[lambertian_count - 1]); // Rastgele küre oluştur ve diziye ekle
+        scene.add(&spheres[sphere_count - 1]); // Küreyi sahneye ekle
     }
-    Vec3 unit_direction = r.direction.normalize(); // Işının yönünü birim vektöre dönüştür
-    double t = 0.5 * (unit_direction.y + 1.0); // Yatay koordinat [0,1] aralığında
-    return (1.0 -t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);  // Arka plan rengi: üstte açık mavi, altta beyaz olacak şekilde lineer interpolasyon yaparak döndür
 }
 
 int main() {
-    int width = 400;
+    Sphere spheres[210]; // Küreler için bir dizi oluştur
+    int sphere_count = 0; // Küre sayısını takip etmek için bir sayaç
+    Lambertian lambertians[200]; // Lambertian malzemeler için bir dizi oluştur
+    int lambertian_count = 0; // Lambertian malzeme sayısını takip etmek için bir sayaç
+    Lambertian mat_zemin(Color(0.3, 0.7, 0.2));
+    Lambertian mat_orta(Color(0.8, 0.3, 0.3));
+    Lambertian mat_sol(Color(0.1, 0.2, 0.8));
+    Metal      mat_sag(Color(0.8, 0.8, 0.8), 0.1);
+    Lambertian mat_ust(Color(0.8, 0.6, 0.2));
+    FILE* out = fopen("output.ppm", "w"); // Render sonucunu output.ppm dosyasına yazmak için dosya açılır
+    int width = 1280; // Görüntü genişliği, 16:9 oranına göre hesaplanır
     int height = static_cast<int>(width / (16.0 / 9.0)); // Görüntü yüksekliği, 16:9 oranına göre hesaplanır
     Camera cam; // Kamera oluştur
-
-    Sphere sphere(Vec3(0, 0, -1), 0.5); // Küre oluştur
     Scene scene; // Sahne oluştur
-    scene.add(&sphere); // Küreyi sahneye ekle
-    Sphere ground(Vec3(0, -100.5, -1), 100); // Zemin küresi oluştur
-    scene.add(&ground); // Zemini sahneye ekle
-    FILE* out = fopen("output/renders/sphere.ppm", "w"); // PPM dosyası oluştur
-    write_ppm_header(out, width, height); // PPM başlığını yaz
-    for (int j = height - 1; j >= 0; --j) { // Satırları tersten yaz (PPM formatı için)
-        for (int i = 0; i < width; ++i) { // Her sütun için
-            double u = double(i) / (width - 1); // Yatay koordinat [0,1] aralığında
-            double v = double(j) / (height - 1); // Dikey koordinat [0,1] aralığında
-            Ray r = cam.get_ray(u, v); // Kameradan piksele giden ışını al
-            Color pixel_color = ray_color(r, scene); // Işığın rengini hesapla
-            write_color(out, pixel_color); // Rengi PPM dosyasına yaz
-        }
-    }
+    build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
+    //build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Orta sahne oluştur
+    //build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres, lambertians, lambertian_count); // Karmaşık sahne oluştur
+    Renderer renderer(width, height, 16, 5); // Renderer oluştur: 1280x720 çözünürlük, 16 örnek/piksel, maksimum 5 yansıma derinliği    
+    long long ms = renderer.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
+    fprintf(stderr, "Render süresi: %lld ms\n", ms); // Render süresini standart hataya yaz
+    
     fclose(out); // Dosyayı kapat
     return 0;
 }

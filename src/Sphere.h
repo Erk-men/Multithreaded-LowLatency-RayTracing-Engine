@@ -5,11 +5,13 @@
    
 class Sphere : public Hittable {                                                      
 public:         
+    Sphere() : center(Vec3(0,0,0)), radius(0), mat_ptr(nullptr) {}
     Point3 center; // kürenin merkezi
     double radius; // kürenin yarıçapı
+    Material* mat_ptr; // kürenin materyali (örneğin, renk ve yansıtıcılık bilgisi)
 
     // constructor
-    Sphere(const Point3& center, double radius) : center(center), radius(radius) {}                                                                                        
+    Sphere(const Point3& center, double radius, Material* mat) : center(center), radius(radius), mat_ptr(mat) {}                                                                                        
     
     // hit() override
     bool hit(const Ray& ray, double t_min, double t_max, HitRecord& rec) const override {
@@ -31,6 +33,9 @@ public:
     rec.t      = root;                                                                    
     rec.point  = ray.at(root);
     rec.normal = (rec.point - center) / radius;                                           
+    rec.front_face = ray.direction.dot(rec.normal) < 0;
+    if (!rec.front_face) rec.normal = -rec.normal;
+    rec.mat_ptr = mat_ptr;
     return true;
 }
 };

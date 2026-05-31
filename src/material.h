@@ -3,6 +3,7 @@
 
 class Material {
     public:
+    
     virtual bool scatter(const Ray& ray_in, 
         const HitRecord& rec, Vec3& attenuation, Ray& scattered) const = 0;
     virtual ~Material() = default;
@@ -10,6 +11,7 @@ class Material {
 
 class Lambertian : public Material {
     public:
+    Lambertian() : albedo(Vec3(0,0,0)) {}
     Vec3 albedo; // yüzeyin rengi
 
     Lambertian(const Vec3& a) : albedo(a) {}

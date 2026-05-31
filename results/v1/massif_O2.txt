@@ -1,0 +1,86 @@
+--------------------------------------------------------------------------------
+Command:            ./raytracer_O2
+Massif arguments:   --massif-out-file=results/v1/massif_O2.out
+ms_print arguments: results/v1/massif_O2.out
+--------------------------------------------------------------------------------
+
+
+    KB
+76.52^:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::#
+     |:                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+     |@                                                                      #
+   0 +----------------------------------------------------------------------->Gi
+     0                                                                   18.87
+
+Number of snapshots: 13
+ Detailed snapshots: [5, 8 (peak)]
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  0              0                0                0             0            0
+  1      1,996,702           73,736           73,728             8            0
+  2      2,000,980           74,224           74,200            24            0
+  3      2,001,518           74,248           74,208            40            0
+  4      2,001,638           74,272           74,224            48            0
+  5      2,001,729           74,272           74,224            48            0
+99.94% (74,224B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->99.27% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->99.27% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->99.27% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->99.27% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->99.27% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->00.67% (496B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  6      2,001,729           74,248           74,216            32            0
+  7      2,009,532           78,352           78,312            40            0
+  8 20,262,375,598           78,352           78,312            40            0
+99.95% (78,312B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->94.10% (73,728B) 0x491938E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33)
+| ->94.10% (73,728B) 0x400571E: call_init.part.0 (dl-init.c:74)
+|   ->94.10% (73,728B) 0x4005823: call_init (dl-init.c:120)
+|     ->94.10% (73,728B) 0x4005823: _dl_init (dl-init.c:121)
+|       ->94.10% (73,728B) 0x401F59F: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->05.23% (4,096B) 0x4B931B4: _IO_file_doallocate (filedoalloc.c:101)
+| ->05.23% (4,096B) 0x4BA3523: _IO_doallocbuf (genops.c:347)
+|   ->05.23% (4,096B) 0x4BA0F8F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:745)
+|     ->05.23% (4,096B) 0x4BA1AAE: _IO_new_file_xsputn (fileops.c:1244)
+|       ->05.23% (4,096B) 0x4BA1AAE: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1197)
+|         ->05.23% (4,096B) 0x4B6ECC8: __printf_buffer_flush_to_file (printf_buffer_to_file.c:59)
+|           ->05.23% (4,096B) 0x4B6ECC8: __printf_buffer_to_file_done (printf_buffer_to_file.c:120)
+|             ->05.23% (4,096B) 0x4B79742: __vfprintf_internal (vfprintf-internal.c:1545)
+|               ->05.23% (4,096B) 0x4C44CF2: __fprintf_chk (fprintf_chk.c:33)
+|                 ->05.23% (4,096B) 0x10AABD: Renderer::render(Scene const&, Camera const&, _IO_FILE*) (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_O2)
+|                   ->05.23% (4,096B) 0x1094BC: main (in /home/erkmen/Desktop/Akademia/System_Programming/ProjectRayTraycing/raytracer_O2)
+|                     
+->00.62% (488B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  9 20,262,375,598           74,248           74,216            32            0
+ 10 20,262,375,736           73,760           73,744            16            0
+ 11 20,262,375,803           73,736           73,728             8            0
+ 12 20,262,392,491                0                0             0            0
