@@ -1,0 +1,14 @@
+Rendering time: 21899 ms
+Render süresi (V2): 21899 ms
+
+ Performance counter stats for './raytracer_v2_O2':
+
+         4,250,801      L1-icache-load-misses                                                 
+       928,075,588      L1-dcache-load-misses                                                 
+
+      21.910705214 seconds time elapsed
+
+     260.017398000 seconds user
+       0.388282000 seconds sys
+
+

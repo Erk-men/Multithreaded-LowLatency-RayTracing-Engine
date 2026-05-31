@@ -2,9 +2,9 @@ version, scene , optimization, time_ms, user_ms, sys_ms, instructions, cycles, i
 v2     , simple, O0          , 2085   , 23068  , 116   , 93265156639 , 106441795703, 0.88, 125743070  , 11947           , 21924       , 1052526         , 57636123
 v2     , simple, O2          , 331    , 2503   , 60    , 20660732829 , 11910442479, 1.73, 22073100   , 1326            , 21703       , 374823          , 12870039
 v2     , simple, O3          , 296    , 1870   , 73    , 17444781520 , 8969492158, 1.94, 21521643    , 1110            , 21703       , 388448          , 13860511
-v2     , medium, O0          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
-v2     , medium, O2          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
-v2     , medium, O3          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
+v2     , medium, O0          , 4507   , 51470  , 150   , 211216147017, 233948973864, 0.90, 275003080  , 20698           , 21900       , 2294411         , 145263528
+v2     , medium, O2          , 628    , 6088   , 63    , 47466319466 , 28612146545, 1.66, 57475867   , 2884            , 21900       , 477789          , 26795901
+v2     , medium, O3          , 531    , 4741   , 77    , 40861399912 , 22322638719, 1.83, 55724832   , 2692            , 21900       , 424872          , 23132633
 v2     , heavy , O0          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
-v2     , heavy , O2          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
-v2     , heavy , O3          , TBD    , TBD    , TBD   , TBD         , TBD   , TBD, TBD          , TBD             , TBD         , TBD             , TBD
+v2     , heavy , O2          , 21927  , 258556 , 401   , 2659673126725, 1167604064981, 2.28, 805812719 , 97927           , 21900*      , 4250801         , 928075588
+v2     , heavy , O3          , 21472  , 253205 , 412   , 2629837033643, 1140694869083, 2.31, 804102409 , 100316          , 21900*      , 4538071         , 1124109333

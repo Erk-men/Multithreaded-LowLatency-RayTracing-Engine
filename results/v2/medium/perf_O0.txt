@@ -1,0 +1,16 @@
+Rendering time: 4442 ms
+Render süresi (V2): 4442 ms
+
+ Performance counter stats for './raytracer_v2_O0':
+
+   211,216,147,017      instructions                     #    0.90  insn per cycle            
+   233,948,973,864      cycles                                                                
+       275,003,080      branch-misses                                                         
+            20,698      context-switches                                                      
+
+       4.454077710 seconds time elapsed
+
+      51.048057000 seconds user
+       0.185259000 seconds sys
+
+

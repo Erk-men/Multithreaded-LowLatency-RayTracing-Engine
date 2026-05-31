@@ -93,9 +93,9 @@ int main() {
 
     // BUILD SCENE LER
 
-    build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
+    //build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
     //build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Orta sahne oluştur
-    //build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); // Karmaşık sahne oluştur
+    build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); // Karmaşık sahne oluştur
     
     // RENDERERLER 
 
@@ -108,7 +108,7 @@ int main() {
     //fclose(out); // Dosyayı kapat
 
     // RENDERER V2
-    RendererV2 renderer_v2(width, height, 16, 5);
+    RendererV2 renderer_v2(width, height, 64, 15);
     long long ms_v2 = renderer_v2.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
     fprintf(stderr, "Render süresi (V2): %lld ms\n", ms_v2); // Render süresini standart hataya yaz
     fclose(out); // Dosyayı kapat
