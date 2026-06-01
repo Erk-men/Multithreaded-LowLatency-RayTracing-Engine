@@ -4,10 +4,13 @@
 #include "renderer.h"
 #include "material.h"
 #include "ppm.h"
+#include "threadpool.h"
+#include "progress.h"
 #include <iostream>
 #include <string>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 
 
 void build_scene_simple(Scene& scene, 
@@ -121,46 +124,97 @@ int main(int argc, char* argv[]) {
       Scene  scene;
       Camera cam;
 
-      if      (args.scene == "simple")  build_scene_simple(scene, mat_zemin,
-  mat_orta, spheres, sphere_count);
-      else if (args.scene == "medium")  build_scene_medium(scene, mat_zemin,
-  mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres);
-      else                              build_scene_complex(scene, mat_zemin,
-  mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians,
-  lambertian_count); 
+    if      (args.scene == "simple")  build_scene_simple(scene, mat_zemin,
+        mat_orta, spheres, sphere_count);
+    else if (args.scene == "medium")  build_scene_medium(scene, mat_zemin,
+        mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres);
+    else                              build_scene_complex(scene, mat_zemin,
+        mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); 
   
-      PPMWriter writer(cfg.width, cfg.height);
+    PPMWriter writer(cfg.width, cfg.height);
       
-      std::cout << "Mode: " << args.mode << " | Scene: " << args.scene
-                << " | " << cfg.width << "x" << cfg.height
-                << " | samples=" << cfg.samples << "\n";
+    std::cout << "Mode: " << args.mode << " | Scene: " << args.scene
+            << " | " << cfg.width << "x" << cfg.height
+            << " | samples=" << cfg.samples << "\n";
                 
-      auto t_start = std::chrono::high_resolution_clock::now();
+    auto t_start = std::chrono::high_resolution_clock::now();
 
-      if (args.mode == "single") {
+    if (args.mode == "single") {
           render_tile(0, 0, cfg.width, cfg.height, scene, cam, writer, cfg);
 
-      } else if (args.mode == "naive") {
-      std::thread* threads = new std::thread[cfg.height];
-      for (int y = 0; y < cfg.height; ++y)
-          threads[y] = std::thread([&, y] {
-              render_tile(0, y, cfg.width, y + 1, scene, cam, writer, cfg);
-          });
-      for (int y = 0; y < cfg.height; ++y)
-          threads[y].join();
-      delete[] threads;
+    } else if (args.mode == "naive") {
+        std::thread* threads = new std::thread[cfg.height];
+        for (int y = 0; y < cfg.height; ++y)
+            threads[y] = std::thread([&, y] {
+                render_tile(0, y, cfg.width, y + 1, scene, cam, writer, cfg);
+            });
+        for (int y = 0; y < cfg.height; ++y)
+            threads[y].join();
+        delete[] threads;
         
-      } else {
-          std::cerr << "Bilinmeyen mod: " << args.mode << "\n";
-          return 1;
-      }   
+  } else if (args.mode == "pool" || args.mode == "unaligned") {
+      const int tile_w = 64, tile_h = 64;
+      int tiles_x = (cfg.width  + tile_w - 1) / tile_w;
+      int tiles_y = (cfg.height + tile_h - 1) / tile_h;
+      int total_tiles = tiles_x * tiles_y;
+
+      ThreadPool  pool(args.threads);
+      ProgressBar progress(total_tiles, args.threads);
+      progress.start();
+
+      for (int ty = 0; ty < cfg.height; ty += tile_h) {
+          for (int tx = 0; tx < cfg.width; tx += tile_w) {
+              int x0 = tx, y0 = ty;
+              int x1 = std::min(tx + tile_w, cfg.width);
+              int y1 = std::min(ty + tile_h, cfg.height);
+              pool.submit([&, x0, y0, x1, y1] {
+                  render_tile(x0, y0, x1, y1, scene, cam, writer, cfg);
+                  int idx = ThreadPool::this_thread_idx();
+                  if (idx >= 0 && idx < args.threads)
+                      progress.increment(idx);
+              });
+          }
+      }
+      pool.shutdown();
+      progress.stop();
+
+    } else if (args.mode == "aligned") {
+        const int tile_w = 64, tile_h = 64;
+        int tiles_x = (cfg.width  + tile_w - 1) / tile_w;
+        int tiles_y = (cfg.height + tile_h - 1) / tile_h;
+        int total_tiles = tiles_x * tiles_y;
+
+        ThreadPool         pool(args.threads);
+        AlignedProgressBar progress(total_tiles, args.threads);
+        progress.start();
+
+        for (int ty = 0; ty < cfg.height; ty += tile_h) {
+            for (int tx = 0; tx < cfg.width; tx += tile_w) {
+                int x0 = tx, y0 = ty;
+                int x1 = std::min(tx + tile_w, cfg.width);
+                int y1 = std::min(ty + tile_h, cfg.height);
+                pool.submit([&, x0, y0, x1, y1] {
+                    render_tile(x0, y0, x1, y1, scene, cam, writer, cfg);
+                    int idx = ThreadPool::this_thread_idx();
+                    if (idx >= 0 && idx < args.threads)
+                    progress.increment(idx);
+                });
+            }
+        }
+        pool.shutdown();
+        progress.stop();
+
+    } else {
+        std::cerr << "Bilinmeyen mod: " << args.mode << "\n";
+        return 1;
+    }
       
-      auto t_end = std::chrono::high_resolution_clock::now();
-      double ms  = std::chrono::duration<double, std::milli>(t_end -
-  t_start).count();
-      std::cout << "Tamamlandi: " << ms << " ms\n";
+    auto t_end = std::chrono::high_resolution_clock::now();
+    double ms  = std::chrono::duration<double, std::milli>(t_end -
+    t_start).count();
+    std::cout << "Tamamlandi: " << ms << " ms\n";
       
-      writer.save(args.output);
-      std::cout << "Kaydedildi: " << args.output << "\n";
-      return 0;
-  }   
+    writer.save(args.output);
+    std::cout << "Kaydedildi: " << args.output << "\n";
+    return 0;
+}   
