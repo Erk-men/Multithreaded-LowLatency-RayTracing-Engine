@@ -1,6 +1,7 @@
 #pragma once
 #include "scene.h"
 #include "camera.h"
+#include "ppm.h"
 #include <chrono>
 #include <cstdio>
 
@@ -19,3 +20,17 @@ class Renderer {
     long long render(const Scene& scene, const Camera& camera, FILE* out);
 
 };
+
+
+struct RenderConfig {
+      int width;
+      int height;
+      int samples;
+      int max_depth;
+};
+
+void render_tile(int x0, int y0, int x1, int y1,
+                const Scene& scene,
+                const Camera& camera,
+                PPMWriter& writer,
+                const RenderConfig& cfg);

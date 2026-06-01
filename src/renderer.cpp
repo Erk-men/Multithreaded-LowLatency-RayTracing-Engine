@@ -46,3 +46,31 @@ long long Renderer::render(const Scene& scene, const Camera& camera, FILE* out) 
     fprintf(stderr, "Rendering time: %ld ms\n", duration.count());
     return duration.count();
 }
+
+void render_tile(int x0, int y0, int x1, int y1,
+                const Scene& scene,
+                const Camera& camera,
+                PPMWriter& writer,
+                const RenderConfig& cfg)
+    {
+    static thread_local std::mt19937 rng(std::random_device{}());
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
+
+    for (int j = y0; j < y1; ++j) {
+        for (int i = x0; i < x1; ++i) {
+            Color pixel_color(0, 0, 0);
+            for (int s = 0; s < cfg.samples; ++s) {
+                double u = (i + dist(rng)) / (cfg.width - 1);
+                double v = (j + dist(rng)) / (cfg.height - 1);
+                Ray ray = camera.get_ray(u, v);
+                pixel_color = pixel_color + ray_color(ray, scene,
+cfg.max_depth);
+            }
+            Color avg = pixel_color / cfg.samples;
+            Color gc = Color(Vec3::gamma_correct(avg.x),
+                            Vec3::gamma_correct(avg.y),
+                            Vec3::gamma_correct(avg.z));
+            writer.set_pixel(i, j, gc);
+        } 
+    }
+}

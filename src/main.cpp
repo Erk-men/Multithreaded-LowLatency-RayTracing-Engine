@@ -3,9 +3,12 @@
 #include "Sphere.h"
 #include "scene.h"
 #include "renderer.h"
-#include "renderer_v2.h"
 #include "material.h"
 #include "ppm.h"
+#include <iostream>
+#include <string>
+#include <thread>
+#include <chrono>
 
 
 void build_scene_simple(Scene& scene, 
@@ -68,51 +71,96 @@ void build_scene_complex(Scene& scene,
     }
 }
 
-int main() {
-    Sphere spheres[210]; // Küreler için bir dizi oluştur
-    int sphere_count = 0; // Küre sayısını takip etmek için bir sayaç
-    Lambertian lambertians[200]; // Lambertian malzemeler için bir dizi oluştur
-    int lambertian_count = 0; // Lambertian malzeme sayısını takip etmek için bir sayaç
-    Lambertian mat_zemin(Color(0.3, 0.7, 0.2));
-    Lambertian mat_orta(Color(0.8, 0.3, 0.3));
-    Lambertian mat_sol(Color(0.1, 0.2, 0.8));
-    Metal      mat_sag(Color(0.8, 0.8, 0.8), 0.1);
-    Lambertian mat_ust(Color(0.8, 0.6, 0.2));
 
-    // OUTPUT LAR
-    // v1 için
-    //FILE* out = fopen("output_v1.ppm", "w"); // Render sonucunu output.ppm dosyasına yazmak için dosya açılır
-    
-    // v2 için
-    FILE* out = fopen("output_v2.ppm", "w"); // Render sonucunu output_v2.ppm dosyasına yazmak için dosya açılır
 
-    int width = 1280; // Görüntü genişliği, 16:9 oranına göre hesaplanır
-    int height = static_cast<int>(width / (16.0 / 9.0)); // Görüntü yüksekliği, 16:9 oranına göre hesaplanır
-    Camera cam; // Kamera oluştur
-    Scene scene; // Sahne oluştur
+struct Args {
+    int         threads = std::thread::hardware_concurrency();
+    std::string mode    = "single";
+    std::string scene   = "simple";
+    int         width   = 1280;
+    int         height  = 720;
+    int         samples = 16;
+    int         depth   = 5;  
+    std::string output  = "output.ppm";
+};
 
-    // BUILD SCENE LER
+  Args parse_args(int argc, char* argv[]) {
+      Args a;
+      for (int i = 1; i < argc; ++i) {
+          std::string arg = argv[i];
+          if      (arg == "--threads" && i+1 < argc) a.threads =
+  std::stoi(argv[++i]);
+          else if (arg == "--mode"    && i+1 < argc) a.mode    = argv[++i];
+          else if (arg == "--scene"   && i+1 < argc) a.scene   = argv[++i];
+          else if (arg == "--width"   && i+1 < argc) a.width   =
+  std::stoi(argv[++i]);
+          else if (arg == "--height"  && i+1 < argc) a.height  =
+  std::stoi(argv[++i]);
+          else if (arg == "--samples" && i+1 < argc) a.samples =
+  std::stoi(argv[++i]);
+          else if (arg == "--depth"   && i+1 < argc) a.depth   =
+  std::stoi(argv[++i]);
+          else if (arg == "--output"  && i+1 < argc) a.output  = argv[++i];
+      }
+      return a;
+  }
 
-    //build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
-    //build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Orta sahne oluştur
-    build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); // Karmaşık sahne oluştur
-    
-    // RENDERERLER 
 
-    // RENDERER V1
+  int main(int argc, char* argv[]) {
+      Args args = parse_args(argc, argv);
+      RenderConfig cfg{args.width, args.height, args.samples, args.depth};
+      // Materyal ve sahne kurulumu (mevcut koddan taşı)
+      Sphere     spheres[210];    int sphere_count    = 0;
+      Lambertian lambertians[200]; int lambertian_count = 0;
+      Lambertian mat_zemin(Color(0.3, 0.7, 0.2));
+      Lambertian mat_orta (Color(0.8, 0.3, 0.3));
+      Lambertian mat_sol  (Color(0.1, 0.2, 0.8));
+      Metal      mat_sag  (Color(0.8, 0.8, 0.8), 0.1);
+      Lambertian mat_ust  (Color(0.8, 0.6, 0.2));
 
-    // Renderer v1 oluştur: 1280x720 , simple için 16 5, medium için 16 10, complex için 64 15 önerilir
-    //Renderer renderer(width, height, 64, 15); 
-    //long long ms = renderer.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
-    //fprintf(stderr, "Render süresi: %lld ms\n", ms); // Render süresini standart hataya yaz
-    //fclose(out); // Dosyayı kapat
+      Scene  scene;
+      Camera cam;
 
-    // RENDERER V2
-    RendererV2 renderer_v2(width, height, 64, 15);
-    long long ms_v2 = renderer_v2.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
-    fprintf(stderr, "Render süresi (V2): %lld ms\n", ms_v2); // Render süresini standart hataya yaz
-    fclose(out); // Dosyayı kapat
-    
-    
-    return 0;
-}
+      if      (args.scene == "simple")  build_scene_simple(scene, mat_zemin,
+  mat_orta, spheres, sphere_count);
+      else if (args.scene == "medium")  build_scene_medium(scene, mat_zemin,
+  mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres);
+      else                              build_scene_complex(scene, mat_zemin,
+  mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians,
+  lambertian_count); 
+  
+      PPMWriter writer(cfg.width, cfg.height);
+      
+      std::cout << "Mode: " << args.mode << " | Scene: " << args.scene
+                << " | " << cfg.width << "x" << cfg.height
+                << " | samples=" << cfg.samples << "\n";
+                
+      auto t_start = std::chrono::high_resolution_clock::now();
+
+      if (args.mode == "single") {
+          render_tile(0, 0, cfg.width, cfg.height, scene, cam, writer, cfg);
+
+      } else if (args.mode == "naive") {
+      std::thread* threads = new std::thread[cfg.height];
+      for (int y = 0; y < cfg.height; ++y)
+          threads[y] = std::thread([&, y] {
+              render_tile(0, y, cfg.width, y + 1, scene, cam, writer, cfg);
+          });
+      for (int y = 0; y < cfg.height; ++y)
+          threads[y].join();
+      delete[] threads;
+        
+      } else {
+          std::cerr << "Bilinmeyen mod: " << args.mode << "\n";
+          return 1;
+      }   
+      
+      auto t_end = std::chrono::high_resolution_clock::now();
+      double ms  = std::chrono::duration<double, std::milli>(t_end -
+  t_start).count();
+      std::cout << "Tamamlandi: " << ms << " ms\n";
+      
+      writer.save(args.output);
+      std::cout << "Kaydedildi: " << args.output << "\n";
+      return 0;
+  }   
