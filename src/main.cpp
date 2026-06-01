@@ -1,4 +1,3 @@
-#include <cstdio>
 #include "camera.h"
 #include "Sphere.h"
 #include "scene.h"
@@ -74,39 +73,40 @@ void build_scene_complex(Scene& scene,
 
 
 struct Args {
-    int         threads = std::thread::hardware_concurrency();
-    std::string mode    = "single";
-    std::string scene   = "simple";
-    int         width   = 1280;
-    int         height  = 720;
-    int         samples = 16;
-    int         depth   = 5;  
-    std::string output  = "output.ppm";
+    int         threads = std::thread::hardware_concurrency(); // Varsayılan olarak mevcut CPU çekirdeği sayısı kadar thread kullan
+    std::string mode    = "single"; // "single" (tek thread), "naive" (satır bazında thread), "tile" (blok bazında thread) gibi modlar olabilir
+    std::string scene   = "simple"; // "simple" (2 küre), "medium" (5 küre), "complex" (200 küre) gibi sahne seçenekleri
+    int         width   = 1280; // Görüntü genişliği
+    int         height  = 720; // Görüntü yüksekliği
+    int         samples = 16; // Piksel başına örnek sayısı (antialiasing için)
+    int         depth   = 5;  // Işınların maksimum yansıma derinliği
+    std::string output  = "output.ppm"; 
 };
 
-  Args parse_args(int argc, char* argv[]) {
-      Args a;
-      for (int i = 1; i < argc; ++i) {
-          std::string arg = argv[i];
-          if      (arg == "--threads" && i+1 < argc) a.threads =
-  std::stoi(argv[++i]);
-          else if (arg == "--mode"    && i+1 < argc) a.mode    = argv[++i];
-          else if (arg == "--scene"   && i+1 < argc) a.scene   = argv[++i];
-          else if (arg == "--width"   && i+1 < argc) a.width   =
-  std::stoi(argv[++i]);
-          else if (arg == "--height"  && i+1 < argc) a.height  =
-  std::stoi(argv[++i]);
-          else if (arg == "--samples" && i+1 < argc) a.samples =
-  std::stoi(argv[++i]);
-          else if (arg == "--depth"   && i+1 < argc) a.depth   =
-  std::stoi(argv[++i]);
-          else if (arg == "--output"  && i+1 < argc) a.output  = argv[++i];
-      }
-      return a;
-  }
+// Komut satırı argümanlarını ayrıştıran fonksiyon
+Args parse_args(int argc, char* argv[]) {  //
+    Args a; // Varsayılan değerlerle başlat
+    for (int i = 1; i < argc; ++i) { 
+        std::string arg = argv[i]; 
+        if      (arg == "--threads" && i+1 < argc) a.threads = 
+    std::stoi(argv[++i]); //
+        else if (arg == "--mode"    && i+1 < argc) a.mode    = argv[++i];
+        else if (arg == "--scene"   && i+1 < argc) a.scene   = argv[++i];
+        else if (arg == "--width"   && i+1 < argc) a.width   =
+    std::stoi(argv[++i]);
+        else if (arg == "--height"  && i+1 < argc) a.height  =
+    std::stoi(argv[++i]);
+        else if (arg == "--samples" && i+1 < argc) a.samples =
+    std::stoi(argv[++i]);
+        else if (arg == "--depth"   && i+1 < argc) a.depth   =
+    std::stoi(argv[++i]);
+        else if (arg == "--output"  && i+1 < argc) a.output  = argv[++i];
+    }
+    return a;
+}
 
 
-  int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
       Args args = parse_args(argc, argv);
       RenderConfig cfg{args.width, args.height, args.samples, args.depth};
       // Materyal ve sahne kurulumu (mevcut koddan taşı)
