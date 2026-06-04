@@ -1,0 +1,13 @@
+
+ Performance counter stats for './raytracer_v3_O3 --scene simple --mode pool --samples 16 --depth 5 --output /dev/null':
+
+         5,172,482      L1-dcache-misses                                                      
+            43,835      L1-icache-misses                                                      
+         1,416,489      cache-misses                                                          
+
+       0.291904012 seconds time elapsed
+
+       1.842623000 seconds user
+       0.009976000 seconds sys
+
+
