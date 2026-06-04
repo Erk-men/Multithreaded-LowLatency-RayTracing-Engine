@@ -1,0 +1,20 @@
+
+ Performance counter stats for './raytracer_v3_O3 --scene complex --mode pool --samples 64 --depth 15 --output /dev/null':
+
+   256,595,892,018      task-clock                       #   11.715 CPUs utilized             
+            25,620      context-switches                 #   99.846 /sec                      
+                23      cpu-migrations                   #    0.090 /sec                      
+             5,696      page-faults                      #   22.198 /sec                      
+ 2,623,791,931,562      instructions                     #    2.32  insn per cycle            
+                                                  #    0.00  stalled cycles per insn   
+ 1,132,667,695,174      cycles                           #    4.414 GHz                       
+     4,044,423,700      stalled-cycles-frontend          #    0.36% frontend cycles idle      
+   197,528,178,428      branches                         #  769.803 M/sec                     
+       778,269,624      branch-misses                    #    0.39% of all branches           
+
+      21.904044235 seconds time elapsed
+
+     255.877181000 seconds user
+       0.642669000 seconds sys
+
+
