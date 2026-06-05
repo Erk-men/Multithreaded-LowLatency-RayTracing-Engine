@@ -1,0 +1,17 @@
+Mode: aligned | Scene: simple | 1280x720 | samples=16
+[████████████████████] 100.0% — Threads: 12 — Elapsed: 0.2s   
+Tamamlandi: 200.533 ms
+Kaydedildi: /dev/null
+
+ Performance counter stats for './raytracer_v4_O3 --scene simple --mode aligned --samples 16 --depth 5 --output /dev/null':
+
+         6,517,574      L1-dcache-misses                                                      
+            44,082      L1-icache-misses                                                      
+         1,315,894      cache-misses                                                          
+
+       0.294940787 seconds time elapsed
+
+       1.830671000 seconds user
+       0.013944000 seconds sys
+
+

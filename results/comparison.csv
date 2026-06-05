@@ -8,6 +8,6 @@ v2     , heavy , O2          , 21927  , 258556 , 401    , 14.93x
 v3     , simple, O2          , 401    , 2490   , 11     , 4.70x
 v3     , medium, O2          , 601    , 5500   , 23     , 11.76x
 v3     , heavy , O2          , 22413  , 259858 , 1348   , 14.60x
-v4     , simple, O2          , TBD    , TBD    , TBD    , TBD
-v4     , medium, O2          , TBD    , TBD    , TBD    , TBD
-v4     , heavy , O2          , TBD    , TBD    , TBD    , TBD
+v4     , simple, O2          , 402    , 2480   , 10     , 4.69x
+v4     , medium, O2          , 602    , 5500   , 20     , 11.74x
+v4     , heavy , O2          , 22009  , 260970 , 100    , 14.87x
