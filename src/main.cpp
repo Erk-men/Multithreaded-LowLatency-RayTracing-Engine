@@ -247,6 +247,30 @@ int main(int argc, char* argv[]) {
             std::cout << "Kare " << i + 1 << "/" << args.frames << " -> " << fname << "\n";
         }
 
+    } 
+    else if (args.mode == "animate-single") {
+    std::filesystem::create_directories("frames");
+
+    double radius = 3.0;
+    double cam_height = 1.0;
+    double aspect = (double)args.width / args.height;
+    RenderConfig frame_cfg{args.width, args.height, args.samples, args.depth};
+
+    for (int i = 0; i < args.frames; ++i) {
+        double angle = 2.0 * M_PI * i / args.frames;
+        Point3 from(radius * std::cos(angle), cam_height, radius * std::sin(angle) - 1.0);
+        Point3 at(0, 0, -1);
+        Camera cam_frame(from, at, Vec3(0, 1, 0), 45.0, aspect);
+
+        PPMWriter frame_writer(args.width, args.height);
+        render_tile(0, 0, args.width, args.height, scene, cam_frame, frame_writer, frame_cfg);
+
+        char fname[64];
+        std::snprintf(fname, sizeof(fname), "frames/frame_%03d.ppm", i);
+        frame_writer.save(fname);
+        std::cout << "Kare " << i + 1 << "/" << args.frames << " -> " << fname << "\n";
+    }
+    
     } else {
         std::cerr << "Bilinmeyen mod: " << args.mode << "\n";
         return 1;
