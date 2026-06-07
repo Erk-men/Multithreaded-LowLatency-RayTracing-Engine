@@ -11,6 +11,8 @@
 #include <thread>
 #include <chrono>
 #include <algorithm>
+#include <cmath>
+#include <filesystem>
 
 
 void build_scene_simple(Scene& scene, 
@@ -76,6 +78,10 @@ void build_scene_complex(Scene& scene,
 
 
 struct Args {
+    // animasyon için
+    int frames = 72; // Toplam kare sayısı (örneğin, 72 kare = 5 saniye animasyon @ 15 FPS)
+    
+    
     int         threads = std::thread::hardware_concurrency(); // Varsayılan olarak mevcut CPU çekirdeği sayısı kadar thread kullan
     std::string mode    = "single"; // "single" (tek thread), "naive" (satır bazında thread), "tile" (blok bazında thread) gibi modlar olabilir
     std::string scene   = "simple"; // "simple" (2 küre), "medium" (5 küre), "complex" (200 küre) gibi sahne seçenekleri
@@ -104,6 +110,7 @@ Args parse_args(int argc, char* argv[]) {  //
         else if (arg == "--depth"   && i+1 < argc) a.depth   =
     std::stoi(argv[++i]);
         else if (arg == "--output"  && i+1 < argc) a.output  = argv[++i];
+        else if (arg == "--frames" && i+1 < argc) a.frames = std::stoi(argv[++i]);
     }
     return a;
 }
@@ -152,7 +159,7 @@ int main(int argc, char* argv[]) {
             threads[y].join();
         delete[] threads;
         
-  } else if (args.mode == "pool" || args.mode == "unaligned") {
+    } else if (args.mode == "pool" || args.mode == "unaligned") {
       const int tile_w = 64, tile_h = 64;
       int tiles_x = (cfg.width  + tile_w - 1) / tile_w;
       int tiles_y = (cfg.height + tile_h - 1) / tile_h;
@@ -204,17 +211,55 @@ int main(int argc, char* argv[]) {
         pool.shutdown();
         progress.stop();
 
+    } else if (args.mode == "animate") {
+        std::filesystem::create_directories("frames");
+
+        double radius = 3.0;
+        double cam_height = 1.0;
+        double aspect = (double)args.width / args.height;
+        RenderConfig frame_cfg{args.width, args.height, args.samples, args.depth};
+        const int tile = 64;
+
+        for (int i = 0; i < args.frames; ++i) {
+            double angle = 2.0 * M_PI * i / args.frames;
+            Point3 from(radius * std::cos(angle), cam_height, radius * std::sin(angle) - 1.0);
+            Point3 at(0, 0, -1);
+            Camera cam_frame(from, at, Vec3(0, 1, 0), 45.0, aspect);
+
+            PPMWriter frame_writer(args.width, args.height);
+            int tiles_x = (args.width  + tile - 1) / tile;
+            int tiles_y = (args.height + tile - 1) / tile;
+            ThreadPool pool(args.threads);
+
+            for (int ty = 0; ty < tiles_y; ++ty)
+                for (int tx = 0; tx < tiles_x; ++tx) {
+                    int x0 = tx * tile, x1 = std::min(x0 + tile, args.width);
+                    int y0 = ty * tile, y1 = std::min(y0 + tile, args.height);
+                    pool.submit([&, x0, y0, x1, y1] {
+                        render_tile(x0, y0, x1, y1, scene, cam_frame, frame_writer, frame_cfg);
+                    });
+                }
+            pool.shutdown();
+
+            char fname[64];
+            std::snprintf(fname, sizeof(fname), "frames/frame_%03d.ppm", i);
+            frame_writer.save(fname);
+            std::cout << "Kare " << i + 1 << "/" << args.frames << " -> " << fname << "\n";
+        }
+
     } else {
         std::cerr << "Bilinmeyen mod: " << args.mode << "\n";
         return 1;
     }
-      
+
     auto t_end = std::chrono::high_resolution_clock::now();
     double ms  = std::chrono::duration<double, std::milli>(t_end -
     t_start).count();
     std::cout << "Tamamlandi: " << ms << " ms\n";
       
-    writer.save(args.output);
-    std::cout << "Kaydedildi: " << args.output << "\n";
+    if (args.mode != "animate") {
+        writer.save(args.output);
+        std::cout << "Kaydedildi: " << args.output << "\n";
+    }
     return 0;
 }   
