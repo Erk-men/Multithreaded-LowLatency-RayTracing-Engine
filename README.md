@@ -27,22 +27,25 @@ Dört versiyon:
 ```
 ProjectRayTraycing/
 ├── src/
-│   ├── vec3.h          — 3D vektör / nokta / renk (tek tip)
-│   ├── ray.h           — Parametrik ışın: r(t) = o + t·d
-│   ├── hittable.h      — Soyut nesne arayüzü (hit() metodu)
-│   ├── sphere.h        — Küre geometrisi, ışın-küre kesişimi
-│   ├── camera.h        — Viewport → dünya uzayı, animasyon rotasyonu
-│   ├── material.h      — Diffuse (Lambert) + Reflective (Phong)
-│   ├── renderer.h/cpp  — Anti-aliasing, recursive reflection
-│   ├── threadpool.h/cpp— Task queue, mutex, condition_variable
-│   ├── progress.h      — Terminal progress bar
-│   └── ppm.h           — PPM P3 formatında çıktı
+│   ├── vec3.h              — 3D vektör / nokta / renk (tek tip)
+│   ├── ray.h               — Parametrik ışın: r(t) = o + t·d
+│   ├── hittable.h          — Soyut nesne arayüzü (hit() metodu)
+│   ├── Sphere.h            — Küre geometrisi, ışın-küre kesişimi
+│   ├── scene.h             — Çoklu nesne sahnesi, en yakın kesişim
+│   ├── camera.h            — Viewport → dünya uzayı, animasyon rotasyonu
+│   ├── material.h          — Lambertian (mat) + Metal (yansımalı)
+│   ├── ppm.h               — PPM P3 formatında çıktı + PPMWriter tamponu
+│   ├── renderer.h/cpp      — v1 tek thread baseline, anti-aliasing, özyinelemeli ışın
+│   ├── renderer_v2.h/cpp   — v2 thread-per-row (naif paralel)
+│   ├── threadpool.h/cpp    — Task queue, mutex, condition_variable
+│   ├── progress.h          — Terminal progress bar (atomic)
+│   └── main.cpp            — Sahne kurulumu, versiyon seçimi, CSV çıktısı
 ├── scripts/
-│   ├── benchmark.sh    — 1/2/4/8/16 thread × -O0/-O2/-O3 ölçümü
-│   └── plot.py         — Matplotlib ile performans grafikleri
-├── docs/               — Tasarım dokümanları, planlar, LaTeX rapor
-├── output/             — Render edilen görüntüler (.ppm / .png)
-├── results/            — Benchmark CSV dosyaları
+│   ├── benchmark.sh        — 1/2/4/8/16 thread × -O0/-O2/-O3 ölçümü
+│   └── plot.py             — Matplotlib ile performans grafikleri
+├── docs/                   — Tasarım dokümanları, planlar, EN/TR rapor
+├── output/                 — Render edilen görüntüler (.ppm / .png)
+├── results/                — Benchmark CSV dosyaları
 └── Makefile
 ```
 
@@ -124,14 +127,15 @@ make clean
 | 1 | Vec3 — vektör, nokta, renk matematiği | Tamamlandı |
 | 2 | Ray — parametrik ışın | Tamamlandı |
 | 3 | Hittable — soyut nesne arayüzü | Tamamlandı |
-| 4 | Sphere — ışın-küre kesişim geometrisi | Tamamlandı |
-| 5 | PPM, Camera — görüntü çıktısı ve viewport | Bekliyor |
-| 5 | Renderer v1 — tek thread baseline | Bekliyor |
-| 6 | Renderer v2 — thread-per-row (naif) | Bekliyor |
-| 7 | Renderer v3 — Thread Pool, tile-based | Bekliyor |
-| 8 | Renderer v4 — alignas(64) cache fix | Bekliyor |
-| 9 | Benchmark + analiz + grafikler | Bekliyor |
-| 10 | LaTeX rapor + PlantUML diyagramlar | Bekliyor |
+| 4 | Sphere — ışın-küre kesişim geometrisi + birim testler | Tamamlandı |
+| 5 | PPM, Camera — görüntü çıktısı ve viewport | Tamamlandı |
+| 6 | Scene sistemi, çoklu nesne, materyal, anti-aliasing | Tamamlandı |
+| 7 | Renderer v1 — tek thread baseline + zamanlama | Tamamlandı |
+| 8 | Renderer v2 — thread-per-row (naif paralel) | Tamamlandı |
+| 9 | Renderer v3 — Thread Pool, tile-based | Tamamlandı |
+| 10 | Renderer v4 — `alignas(64)` cache fix | Tamamlandı |
+| 11 | Benchmark + 12 ölçüm (3 sahne × 4 versiyon) + grafikler | Tamamlandı |
+| 12 | EN/TR final rapor + UML diyagramlar | Tamamlandı |
 
 ---
 
