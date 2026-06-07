@@ -1,62 +1,80 @@
-# Derleme çıktıları
+# ── Derleme çıktıları ─────────────────────────────────────────────
 *.o
 *.a
-*.out
+gmon.out
+gmon_*.out
 
-# Binary'ler (src içindeki test binary'leri dahil)
-src/test_vec3
-src/test_sphere
-test_vec3
-test_sphere
-ray_tracer
-
-# Görüntü ve animasyon çıktıları
-output/renders/*.ppm
-output/renders/*.png
-output/animation/frame_*.ppm
-output/timelapse/frame_*.ppm
-output/animation/output.mp4
-output/timelapse/t*.mp4
-
-# Benchmark binary'leri
+# ── Binary executable'lar ──────────────────────────────────────────
 raytracer
-raytracer_debug
-raytracer_fast
-raytracer_prof
 raytracer_O0
 raytracer_O2
 raytracer_O3
+raytracer_debug
+raytracer_fast
 raytracer_tsan
 raytracer_bench
-gmon.out
+raytracer_prof
+raytracer_prof_O0
+raytracer_prof_O2
+raytracer_prof_O3
+raytracer_v2
+raytracer_v2_O0
+raytracer_v2_O2
+raytracer_v2_O3
+raytracer_v3_O0
+raytracer_v3_O2
+raytracer_v3_O3
+raytracer_v4_O0
+raytracer_v4_O2
+raytracer_v4_O3
+raytracer_test
+test_sphere
+test_vec3
+ray_tracer
+output_test
+a.out
 
-# .superpowers geçici dosyaları
+# ── Render / görüntü çıktıları ────────────────────────────────────
+output.ppm
+output.png
+output_v2.ppm
+output_v2.png
+frames/
+output/renders/
+output/animation/
+output/timelapse/
+output/animation.mp4
+
+# ── Benchmark sonuçları — sadece CSV'ler tutulur ──────────────────
+results/**/*.txt
+results/**/*.ppm
+results/**/*.png
+results/**/*.out
+
+# ── Raporlar ve teklif PDF (yerel tutulur) ───────────────────────
+docs/final_report.md
+docs/final_report_tr.md
+docs/final_report_tr.pdf
+Enes_Erkmen_RayT_proposal.pdf
+
+# ── Yerel araç ve notlar ──────────────────────────────────────────
+.claude/
 .superpowers/
-
-# Superpowers plan dosyaları
 docs/superpowers/
+CLAUDE.md
+sunum.md
 
-# Benchmark sonuçları (ham CSV'ler — sadece kök dizin)
-results/*.csv
-!results/comparison.csv
-
-# Python cache
+# ── Python cache ──────────────────────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 
-# Editor / IDE
+# ── IDE / Editor ──────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Build klasörü
+# ── Build klasörü ─────────────────────────────────────────────────
 build/
-
-# Sunum notları (yerel tutulur)
-sunum.md
-
-# Oturum bağlam dosyası (yerel tutulur)
-CLAUDE.md
