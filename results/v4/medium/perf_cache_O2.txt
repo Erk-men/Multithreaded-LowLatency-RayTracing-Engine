@@ -1,17 +1,0 @@
-Mode: aligned | Scene: medium | 1280x720 | samples=16
-[█████░░░░░░░░░░░░░░░] 26.7% — Threads: 12 — Elapsed: 0.2s   [████████████░░░░░░░░] 64.2% — Threads: 12 — Elapsed: 0.4s   [████████████████████] 100.0% — Threads: 12 — Elapsed: 0.6s   
-Tamamlandi: 601.572 ms
-Kaydedildi: /dev/null
-
- Performance counter stats for './raytracer_v4_O2 --scene medium --mode aligned --samples 16 --depth 5 --output /dev/null':
-
-        11,762,990      L1-dcache-misses                                                      
-           115,761      L1-icache-misses                                                      
-         2,187,461      cache-misses                                                          
-
-       0.694642938 seconds time elapsed
-
-       5.439741000 seconds user
-       0.029927000 seconds sys
-
-

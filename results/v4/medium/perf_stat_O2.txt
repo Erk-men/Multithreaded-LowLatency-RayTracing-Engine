@@ -1,24 +1,0 @@
-Mode: aligned | Scene: medium | 1280x720 | samples=16
-[█████░░░░░░░░░░░░░░░] 27.5% — Threads: 12 — Elapsed: 0.2s   [█████████████░░░░░░░] 66.7% — Threads: 12 — Elapsed: 0.4s   [████████████████████] 100.0% — Threads: 12 — Elapsed: 0.6s   
-Tamamlandi: 603.397 ms
-Kaydedildi: /dev/null
-
- Performance counter stats for './raytracer_v4_O2 --scene medium --mode aligned --samples 16 --depth 5 --output /dev/null':
-
-     5,494,245,431      task-clock                       #    7.880 CPUs utilized             
-             1,281      context-switches                 #  233.153 /sec                      
-                14      cpu-migrations                   #    2.548 /sec                      
-             5,668      page-faults                      #    1.032 K/sec                     
-    42,376,690,232      instructions                     #    1.69  insn per cycle            
-                                                  #    0.01  stalled cycles per insn   
-    25,123,291,894      cycles                           #    4.573 GHz                       
-       266,602,339      stalled-cycles-frontend          #    1.06% frontend cycles idle      
-     3,841,368,189      branches                         #  699.162 M/sec                     
-        46,616,273      branch-misses                    #    1.21% of all branches           
-
-       0.697241043 seconds time elapsed
-
-       5.472347000 seconds user
-       0.019866000 seconds sys
-
-

@@ -1,6 +1,0 @@
-Rendering time: 296 ms
-Render süresi (V2): 296 ms
-
-real	0m0.312s
-user	0m1.870s
-sys	0m0.073s
