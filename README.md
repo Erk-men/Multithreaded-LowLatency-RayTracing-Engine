@@ -145,3 +145,53 @@ make clean
 - **Thread:** `std::thread` (POSIX uyumlu)
 - **Çıktı formatı:** PPM Plain Text (P3) — sıfır bağımlılık
 - **Çözünürlük:** 1280×720 · **Örnekleme:** 16 ışın/piksel · **Yansıma derinliği:** 5
+
+  make all
+
+  ---
+
+  # v1 — tek thread (yavaş)
+  ./raytracer --threads 1 --mode single --width 1280 --height 720 --samples
+  16 --depth 5 --output output/renders/v1_demo.ppm
+
+  # v4 — 12 thread (hızlı)
+  ./raytracer --threads 12 --mode pool --width 1280 --height 720 --samples
+  16 --depth 5 --output output/renders/v4_demo.ppm
+
+  ---
+  3. Render çıktısını 
+
+  PPM dosyasını açmak için:
+
+  # ImageMagick ile (en kolay):
+  display output/renders/v4_demo.ppm
+
+  # veya PNG'ye çevir, sonra aç:
+  convert output/renders/v4_demo.ppm /tmp/sonuc.png && xdg-open
+  /tmp/sonuc.png
+
+  ---
+  4. Benchmark grafiklerini göster
+
+  xdg-open docs/images/amdahl_speedup.png
+
+  # v1 — tek thread, medium sahne
+  ./raytracer --threads 1 --mode single --scene medium \
+    --width 1280 --height 720 --samples 16 --depth 5 \
+    --output output/renders/v1_demo.ppm
+
+  # v4 — 12 thread, medium sahne (aynı sahne, karşılaştırma için)
+  ./raytracer --threads 12 --mode pool --scene medium \
+    --width 1280 --height 720 --samples 16 --depth 5 \
+    --output output/renders/v4_demo.ppm
+
+
+    # v1 — tek thread, heavy sahne
+  ./raytracer --threads 1 --mode single --scene complex \
+    --width 1280 --height 720 --samples 64 --depth 5 \
+    --output output/renders/v1_heavy.ppm
+
+     # v4 — 12 thread, heavy sahne
+  ./raytracer --threads 12 --mode pool --scene complex \
+    --width 1280 --height 720 --samples 64 --depth 5 \
+    --output output/renders/v4_heavy.ppm

@@ -51,9 +51,7 @@ results/**/*.ppm
 results/**/*.png
 results/**/*.out
 
-# ── Raporlar ve teklif PDF (yerel tutulur) ───────────────────────
-docs/final_report.md
-docs/final_report_tr.md
+# ── Raporlar ve teklif PDF ───────────────────────────────────────
 docs/final_report_tr.pdf
 Enes_Erkmen_RayT_proposal.pdf
 

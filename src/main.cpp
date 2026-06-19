@@ -61,7 +61,7 @@ void build_scene_complex(Scene& scene,
                         int& lambertian_count) {
     // 200 küre: 5 ana + 195 rastgele dağıtılmış küçük küre
     build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Önce orta sahneyi oluştur
-    for (int i = 0; i < 195; ++i) {
+    for (int i = 0; i < 850; ++i) {
         double x = -5.0 + (rand() / (double)RAND_MAX) * 10.0; // -5 ile 5 arasında rastgele x koordinatı
         double y = -0.5 + (rand() / (double)RAND_MAX) * 2.0; // -0.5 ile 4.5 arasında rastgele y
         double z = -1.0 - (rand() / (double)RAND_MAX) * 10.0; // -1 ile -11 arasında rastgele z koordinatı
@@ -87,7 +87,7 @@ struct Args {
     std::string scene   = "simple"; // "simple" (2 küre), "medium" (5 küre), "complex" (200 küre) gibi sahne seçenekleri
     int         width   = 1280; // Görüntü genişliği
     int         height  = 720; // Görüntü yüksekliği
-    int         samples = 16; // Piksel başına örnek sayısı (antialiasing için)
+    int         samples = 4; // Piksel başına örnek sayısı (antialiasing için)
     int         depth   = 5;  // Işınların maksimum yansıma derinliği
     std::string output  = "output.ppm"; 
 };
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
         delete[] threads;
         
     } else if (args.mode == "pool" || args.mode == "unaligned") {
-      const int tile_w = 64, tile_h = 64;
+      const int tile_w = 128, tile_h = 128;
       int tiles_x = (cfg.width  + tile_w - 1) / tile_w;
       int tiles_y = (cfg.height + tile_h - 1) / tile_h;
       int total_tiles = tiles_x * tiles_y;
