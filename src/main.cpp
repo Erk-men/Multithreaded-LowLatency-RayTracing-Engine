@@ -12,66 +12,75 @@
 #include <chrono>
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <filesystem>
+#include <vector>
 
 
-void build_scene_simple(Scene& scene, 
-                        Lambertian& mat_zemin, 
+// --- Scene builder storage caps (FIX-01 / D-02) --------------------------------
+// Scene stores NON-OWNING raw Hittable* into these vectors (scene.h:6). A
+// std::vector reallocation would dangle every pointer already handed to Scene via
+// scene.add(&spheres.back()). We therefore reserve() both vectors UP FRONT to a
+// documented cap >= each builder's known maximum object count, so no reallocation
+// ever happens after the first &element is taken. The 'complex' builder is the
+// max consumer: build_scene_medium's 5 spheres + the 850-iteration loop
+// => 855 spheres and 850 lambertians. Caps are rounded up with a small margin.
+constexpr std::size_t COMPLEX_SCENE_MAX_SPHERES     = 860;
+constexpr std::size_t COMPLEX_SCENE_MAX_LAMBERTIANS = 850;
+
+void build_scene_simple(Scene& scene,
+                        Lambertian& mat_zemin,
                         Lambertian& mat_orta,
-                        Sphere* spheres,
-                        int& sphere_count) {
+                        std::vector<Sphere>& spheres) {
     // 2 küre: merkez + zemin
-    spheres[sphere_count++] = Sphere(Vec3(0, -100.5, -1), 100, &mat_zemin); // Zemin küresi oluştur ve diziye ekle
-    scene.add(&spheres[sphere_count - 1]); // Zemini sahneye ekle
-    spheres[sphere_count++] = Sphere(Vec3(0, 0, -1), 0.5, &mat_orta); // Orta küre oluştur ve diziye ekle
-    scene.add(&spheres[sphere_count - 1]); // Orta küreyi sahneye ekle
+    spheres.push_back(Sphere(Vec3(0, -100.5, -1), 100, &mat_zemin)); // Zemin küresi oluştur ve diziye ekle
+    scene.add(&spheres.back()); // Zemini sahneye ekle
+    spheres.push_back(Sphere(Vec3(0, 0, -1), 0.5, &mat_orta)); // Orta küre oluştur ve diziye ekle
+    scene.add(&spheres.back()); // Orta küreyi sahneye ekle
 }
 
-void build_scene_medium(Scene& scene, 
-                        Lambertian& mat_zemin, 
-                        Lambertian& mat_orta, 
-                        Lambertian& mat_sol, 
+void build_scene_medium(Scene& scene,
+                        Lambertian& mat_zemin,
+                        Lambertian& mat_orta,
+                        Lambertian& mat_sol,
                         Metal& mat_sag,
-                        Lambertian& mat_ust, 
-                        int& sphere_count,
-                        Sphere* spheres) {
+                        Lambertian& mat_ust,
+                        std::vector<Sphere>& spheres) {
     // 5 küre: 3 Lambertian + zemin
-    spheres[sphere_count++] = Sphere(Vec3(0, -100.5, -1), 100, &mat_zemin); // Zemin küresi oluştur ve diziye ekle
-    scene.add(&spheres[sphere_count - 1]); // Zemini sahneye ekle
-    spheres[sphere_count++] = Sphere(Vec3(0, 0, -1), 0.5, &mat_orta); // Orta küre oluştur ve diziye ekle
-    scene.add(&spheres[sphere_count - 1]); // Orta küreyi sahneye ekle
-    spheres[sphere_count++] = Sphere(Vec3(-1, 0, -1), 0.5, &mat_sol); // Sol küre oluştur ve diziye ekle
-    scene.add(&spheres[sphere_count - 1]); // Sol küreyi sahneye ekle
-    spheres[sphere_count++] = Sphere(Vec3(1, 0, -1), 0.5, &mat_sag); // Sağ küre oluştur ve diziye ekle
-    scene.add(&spheres[sphere_count - 1]); // Sağ küreyi sahneye ekle
-    spheres[sphere_count++] = Sphere(Vec3(0, 1, -1), 0.5, &mat_ust); // Üst küre oluştur ve diziye ekle
-    scene.add(&spheres[sphere_count - 1]); // Üst küreyi sahneye ekle
+    spheres.push_back(Sphere(Vec3(0, -100.5, -1), 100, &mat_zemin)); // Zemin küresi oluştur ve diziye ekle
+    scene.add(&spheres.back()); // Zemini sahneye ekle
+    spheres.push_back(Sphere(Vec3(0, 0, -1), 0.5, &mat_orta)); // Orta küre oluştur ve diziye ekle
+    scene.add(&spheres.back()); // Orta küreyi sahneye ekle
+    spheres.push_back(Sphere(Vec3(-1, 0, -1), 0.5, &mat_sol)); // Sol küre oluştur ve diziye ekle
+    scene.add(&spheres.back()); // Sol küreyi sahneye ekle
+    spheres.push_back(Sphere(Vec3(1, 0, -1), 0.5, &mat_sag)); // Sağ küre oluştur ve diziye ekle
+    scene.add(&spheres.back()); // Sağ küreyi sahneye ekle
+    spheres.push_back(Sphere(Vec3(0, 1, -1), 0.5, &mat_ust)); // Üst küre oluştur ve diziye ekle
+    scene.add(&spheres.back()); // Üst küreyi sahneye ekle
 }
-    
 
-void build_scene_complex(Scene& scene, 
-                        Lambertian& mat_zemin, 
-                        Lambertian& mat_orta, 
-                        Lambertian& mat_sol, 
+
+void build_scene_complex(Scene& scene,
+                        Lambertian& mat_zemin,
+                        Lambertian& mat_orta,
+                        Lambertian& mat_sol,
                         Metal& mat_sag,
-                        Lambertian& mat_ust, 
-                        Sphere* spheres,
-                        int& sphere_count,
-                        Lambertian* lambertians,
-                        int& lambertian_count) {
-    // 200 küre: 5 ana + 195 rastgele dağıtılmış küçük küre
-    build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Önce orta sahneyi oluştur
+                        Lambertian& mat_ust,
+                        std::vector<Sphere>& spheres,
+                        std::vector<Lambertian>& lambertians) {
+    // 855 küre: 5 ana + 850 rastgele dağıtılmış küçük küre
+    build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres); // Önce orta sahneyi oluştur
     for (int i = 0; i < 850; ++i) {
         double x = -5.0 + (rand() / (double)RAND_MAX) * 10.0; // -5 ile 5 arasında rastgele x koordinatı
         double y = -0.5 + (rand() / (double)RAND_MAX) * 2.0; // -0.5 ile 4.5 arasında rastgele y
         double z = -1.0 - (rand() / (double)RAND_MAX) * 10.0; // -1 ile -11 arasında rastgele z koordinatı
         double r = 0.1 + (rand() / (double)RAND_MAX) * 0.4; // 0.1 ile 0.5 arasında rastgele yarıçap
-        lambertians[lambertian_count++] = Lambertian(Color(
+        lambertians.push_back(Lambertian(Color(
             rand() / (double)RAND_MAX, // 0 ile 1 arasında rastgele kırmızı
             rand() / (double)RAND_MAX, // 0 ile 1 arasında rastgele yeşil
-            rand() / (double)RAND_MAX));  // 0 ile 1 arasında rastgele mavi
-        spheres[sphere_count++] = Sphere(Vec3(x, y, z), r, &lambertians[lambertian_count - 1]); // Rastgele küre oluştur ve diziye ekle
-        scene.add(&spheres[sphere_count - 1]); // Küreyi sahneye ekle
+            rand() / (double)RAND_MAX)));  // 0 ile 1 arasında rastgele mavi
+        spheres.push_back(Sphere(Vec3(x, y, z), r, &lambertians.back())); // Rastgele küre oluştur ve diziye ekle
+        scene.add(&spheres.back()); // Küreyi sahneye ekle
     }
 }
 
@@ -120,8 +129,13 @@ int main(int argc, char* argv[]) {
       Args args = parse_args(argc, argv);
       RenderConfig cfg{args.width, args.height, args.samples, args.depth};
       // Materyal ve sahne kurulumu (mevcut koddan taşı)
-      Sphere     spheres[210];    int sphere_count    = 0;
-      Lambertian lambertians[200]; int lambertian_count = 0;
+      // FIX-01 (D-01/D-02): sabit C-dizileri yerine std::vector; Scene non-owning
+      // Hittable* tuttuğu için reallocation'ı önlemek üzere ilk &element alınmadan
+      // ÖNCE reserve() ile kapasite ayrılıyor (belgelenmiş constexpr cap).
+      std::vector<Sphere>     spheres;
+      std::vector<Lambertian> lambertians;
+      spheres.reserve(COMPLEX_SCENE_MAX_SPHERES);
+      lambertians.reserve(COMPLEX_SCENE_MAX_LAMBERTIANS);
       Lambertian mat_zemin(Color(0.3, 0.7, 0.2));
       Lambertian mat_orta (Color(0.8, 0.3, 0.3));
       Lambertian mat_sol  (Color(0.1, 0.2, 0.8));
@@ -132,11 +146,11 @@ int main(int argc, char* argv[]) {
       Camera cam;
 
     if      (args.scene == "simple")  build_scene_simple(scene, mat_zemin,
-        mat_orta, spheres, sphere_count);
+        mat_orta, spheres);
     else if (args.scene == "medium")  build_scene_medium(scene, mat_zemin,
-        mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres);
+        mat_orta, mat_sol, mat_sag, mat_ust, spheres);
     else                              build_scene_complex(scene, mat_zemin,
-        mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); 
+        mat_orta, mat_sol, mat_sag, mat_ust, spheres, lambertians);
   
     PPMWriter writer(cfg.width, cfg.height);
       
