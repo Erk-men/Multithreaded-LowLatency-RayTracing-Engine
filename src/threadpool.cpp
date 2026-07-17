@@ -1,4 +1,5 @@
 #include "threadpool.h"
+#include <stdexcept>
 
 // Thread-local worker index: pool dışı thread için -1
 thread_local int tl_worker_idx = -1;
@@ -27,7 +28,15 @@ void ThreadPool::worker_loop(int idx) {
 }
 
 ThreadPool::ThreadPool(int n) {
-    
+        // FIX-07 (D-07): n<1 hard-fail. Aksi halde n==0 → sıfır uzunluklu pool,
+        // hiçbir worker yok, submit edilen tile'lar sonsuza dek kuyrukta kalır
+        // (hang); n<0 → new std::thread[n] uncaught std::bad_array_new_length.
+        // parse_args doğrulamasını bypass eden bir çağıran olsa bile pool kendini
+        // savunur. NOT: bu src/ içindeki ilk throw — kod tabanının tek hata
+        // konvansiyonu şimdiye dek print-to-stderr + return idi.
+        if (n < 1)
+            throw std::invalid_argument("ThreadPool: n_threads must be >= 1");
+
         n_workers = n;
         workers = new std::thread[n];
         for (int i = 0; i < n; ++i) {

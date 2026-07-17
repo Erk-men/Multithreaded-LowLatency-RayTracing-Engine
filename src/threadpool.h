@@ -11,6 +11,16 @@ public:
     explicit ThreadPool(int n_threads);
     ~ThreadPool();
 
+    // FIX-05 (D-15): ThreadPool ham bir std::thread* sahibi (dtor'da delete[]).
+    // Sığ bir kopya/taşıma double-free'ye yol açardı. Pool yalnızca main.cpp'de
+    // yerel stack nesnesi olarak kullanıldığından kopyalamaya/taşımaya hiçbir kod
+    // yolu ihtiyaç duymuyor → dört özel üyenin dördü de = delete (PPMWriter'ın
+    // deleted-copy desenini bir adım öteye taşıyarak move'u da siliyoruz).
+    ThreadPool(const ThreadPool&)            = delete;
+    ThreadPool& operator=(const ThreadPool&) = delete;
+    ThreadPool(ThreadPool&&)                 = delete;
+    ThreadPool& operator=(ThreadPool&&)      = delete;
+
     // Task kuyruğuna ekle — thread-safe.
     // std::function<void()>: parametre/döndürme değeri olmayan callable.
     void submit(std::function<void()> task);
