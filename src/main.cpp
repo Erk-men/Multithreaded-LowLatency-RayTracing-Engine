@@ -247,34 +247,22 @@ int main(int argc, char* argv[]) {
             threads[y].join();
         delete[] threads;
         
-    } else if (args.mode == "pool" || args.mode == "unaligned") {
-      const int tile_w = 128, tile_h = 128;
-      int tiles_x = (cfg.width  + tile_w - 1) / tile_w;
-      int tiles_y = (cfg.height + tile_h - 1) / tile_h;
-      int total_tiles = tiles_x * tiles_y;
-
-      ThreadPool  pool(args.threads);
-      ProgressBar progress(total_tiles, args.threads);
-      progress.start();
-
-      for (int ty = 0; ty < cfg.height; ty += tile_h) {
-          for (int tx = 0; tx < cfg.width; tx += tile_w) {
-              int x0 = tx, y0 = ty;
-              int x1 = std::min(tx + tile_w, cfg.width);
-              int y1 = std::min(ty + tile_h, cfg.height);
-              pool.submit([&, x0, y0, x1, y1] {
-                  render_tile(x0, y0, x1, y1, scene, cam, writer, cfg);
-                  int idx = ThreadPool::this_thread_idx();
-                  if (idx >= 0 && idx < args.threads)
-                      progress.increment(idx);
-              });
-          }
-      }
-      pool.shutdown();
-      progress.stop();
-
-    } else if (args.mode == "aligned") {
-        const int tile_w = 64, tile_h = 64;
+    } else if (args.mode == "pool" || args.mode == "aligned") {
+        // FIX-04 (D-12): v3 (ThreadPool/tile, unaligned ProgressBar) ve v4
+        // (alignas(64) cache-fix / AlignedProgressBar) TEK bir paralel yola
+        // birleştirildi. Eski false-sharing'e açık un-aligned "pool" dalı
+        // KALDIRILDI — tek kalan yol AlignedProgressBar kullanır. v4'ün düzeltmesinin
+        // ölçülmüş bir dezavantajı yok, dolayısıyla eski varyantı seçilebilir tutmak
+        // sadece dispatch'i karmaşıklaştırırdı. v3-vs-v4 false-sharing karşılaştırması
+        // docs/final_report*.md + engineering_journal.md'de tarihsel ölçüm verisi
+        // olarak korunuyor (çalıştırılabilir kalmasına gerek yok).
+        //
+        // "--mode pool" string'i KORUNDU ama artık aligned impl'i çalıştırıyor:
+        // Makefile'ın run/animate/timelapse hedefleri hepsi --mode pool geçiyor,
+        // string'i yeniden anlamlandırmak bu hedefleri Makefile'a dokunmadan çalışır
+        // tutuyor. "--mode aligned" da aynı yola alias. (Bu isimlendirme seçimi
+        // kullanıcı tarafından önceden açıkça onaylandı — bkz. journal 2026-07-18.)
+        const int tile_w = TILE_SIZE, tile_h = TILE_SIZE;
         int tiles_x = (cfg.width  + tile_w - 1) / tile_w;
         int tiles_y = (cfg.height + tile_h - 1) / tile_h;
         int total_tiles = tiles_x * tiles_y;
@@ -311,7 +299,7 @@ int main(int argc, char* argv[]) {
         double cam_height = 1.0;
         double aspect = (double)args.width / args.height;
         RenderConfig frame_cfg{args.width, args.height, args.samples, args.depth};
-        const int tile = 64;
+        const int tile = TILE_SIZE;   // FIX-16 (D-11): tek kaynaktan
 
         for (int i = 0; i < args.frames; ++i) {
             double angle = 2.0 * M_PI * i / args.frames;
