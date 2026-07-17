@@ -3,7 +3,10 @@
 #include "Sphere.h"
 
     int main() {
-    Sphere s(Point3(0, 0, -1), 0.5);
+    // FIX-03: Sphere'in guncel 3-parametreli ctor'una (center, radius, Material*)
+    // guncellendi. Bu geometri/kesisim testleri shading yapmaz — hicbir assertion
+    // rec.mat_ptr'yi dereference etmez — dolayisiyla nullptr materyal guvenli.
+    Sphere s(Point3(0, 0, -1), 0.5, nullptr);
     Ray r(Point3(0, 0, 0), Vec3(0, 0, -1));                                           
     HitRecord rec;                                                                    
                                                                                         
