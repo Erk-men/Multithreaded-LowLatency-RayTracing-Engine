@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
+#include <stdexcept>
 #include <filesystem>
 #include <vector>
 
@@ -101,26 +103,75 @@ struct Args {
     std::string output  = "output.ppm"; 
 };
 
+// -----------------------------------------------------------------------------
+// CLI hata konvansiyonu (FIX-08/09/10, D-05)
+//
+// D-05: Bozuk CLI girdisi (sayisal olmayan --width abc, aralik disi --width 0 /
+// --samples 0 / --depth -5, bilinmeyen bayrak) HARD-FAIL eder: stderr'e temiz bir
+// mesaj + exit(1). Sessiz clamp/deger ikamesi yok — standart Unix CLI konvansiyonu.
+// (Tek istisna: --threads ust siniri, bkz. FIX-06 / D-06 clamp.)
+//
+// Not: src/ icindeki ILK exit-tabanli CLI hard-fail'i. Plan 01-01'in ThreadPool
+// throw'u (D-07) ile ayni "sessizce duzeltme, gurultuyle basarisiz ol" ruhunu
+// izler; burada exit(1) kullaniliyor cunku parse_args deger dondurur, int degil.
+// -----------------------------------------------------------------------------
+[[noreturn]] static void cli_fail(const std::string& msg) {
+    std::cerr << "hata: " << msg << "\n"
+              << "kullanim: raytracer [--threads N] [--mode M] [--scene S] "
+                 "[--width W] [--height H] [--samples N] [--depth D] "
+                 "[--output DOSYA] [--frames N] [--animate] [--timelapse]\n";
+    std::exit(1);
+}
+
+// Tek bir sayisal argumani guvenli ayristir (FIX-08, D-05).
+// Ham std::stoi, --width abc gibi girdide yakalanmamis std::invalid_argument
+// atar (terminate + abort). Burada try/catch ile temiz stderr + exit(1)'e
+// cevriliyor. Ayrica pos kontrolu ile "12abc" gibi arta kalan cop reddediliyor
+// (std::stoi bunu sessizce 12 olarak kabul ederdi).
+static int cli_parse_int(const std::string& flag, const char* value) {
+    try {
+        std::size_t pos = 0;
+        int result = std::stoi(value, &pos);
+        if (value[pos] != '\0')                       // "12abc" -> arta kalan cop
+            cli_fail(flag + " tam sayi olmalidir: " + value);
+        return result;
+    } catch (const std::invalid_argument&) {
+        cli_fail(flag + " tam sayi olmalidir: " + value);
+    } catch (const std::out_of_range&) {
+        cli_fail(flag + " sayi araligi disinda: " + value);
+    }
+}
+
 // Komut satırı argümanlarını ayrıştıran fonksiyon
-Args parse_args(int argc, char* argv[]) {  //
+Args parse_args(int argc, char* argv[]) {
     Args a; // Varsayılan değerlerle başlat
-    for (int i = 1; i < argc; ++i) { 
-        std::string arg = argv[i]; 
-        if      (arg == "--threads" && i+1 < argc) a.threads = 
-    std::stoi(argv[++i]); //
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if      (arg == "--threads" && i+1 < argc) a.threads = cli_parse_int("--threads", argv[++i]);
         else if (arg == "--mode"    && i+1 < argc) a.mode    = argv[++i];
         else if (arg == "--scene"   && i+1 < argc) a.scene   = argv[++i];
-        else if (arg == "--width"   && i+1 < argc) a.width   =
-    std::stoi(argv[++i]);
-        else if (arg == "--height"  && i+1 < argc) a.height  =
-    std::stoi(argv[++i]);
-        else if (arg == "--samples" && i+1 < argc) a.samples =
-    std::stoi(argv[++i]);
-        else if (arg == "--depth"   && i+1 < argc) a.depth   =
-    std::stoi(argv[++i]);
+        else if (arg == "--width"   && i+1 < argc) a.width   = cli_parse_int("--width",   argv[++i]);
+        else if (arg == "--height"  && i+1 < argc) a.height  = cli_parse_int("--height",  argv[++i]);
+        else if (arg == "--samples" && i+1 < argc) a.samples = cli_parse_int("--samples", argv[++i]);
+        else if (arg == "--depth"   && i+1 < argc) a.depth   = cli_parse_int("--depth",   argv[++i]);
         else if (arg == "--output"  && i+1 < argc) a.output  = argv[++i];
-        else if (arg == "--frames" && i+1 < argc) a.frames = std::stoi(argv[++i]);
+        else if (arg == "--frames"  && i+1 < argc) a.frames  = cli_parse_int("--frames",  argv[++i]);
     }
+
+    // Anlamsal aralik dogrulamasi (FIX-09, D-05). Bu alt sinirlar
+    // render_tile'daki tehlikeli bolme yollarini kapatir:
+    //   u = (i + rnd) / (cfg.width - 1)  -> width==1 iken sifira bolme
+    //   avg = pixel_color / cfg.samples  -> samples==0 iken NaN, sonra
+    //                                       PPM yazicida tanimsiz float->int cast (UB)
+    // depth<0 sonsuz/anlamsiz ozyineleme sinirini bozar; threads<1 sifir/negatif
+    // pool demektir (FIX-07 ile tutarli, D-07 defense-in-depth).
+    if (a.width   < 2) cli_fail("--width en az 2 olmalidir");
+    if (a.height  < 2) cli_fail("--height en az 2 olmalidir");
+    if (a.samples < 1) cli_fail("--samples en az 1 olmalidir");
+    if (a.depth   < 0) cli_fail("--depth negatif olamaz");
+    if (a.frames  < 1) cli_fail("--frames en az 1 olmalidir");
+    if (a.threads < 1) cli_fail("--threads en az 1 olmalidir");
+
     return a;
 }
 
