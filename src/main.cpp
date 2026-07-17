@@ -156,6 +156,16 @@ Args parse_args(int argc, char* argv[]) {
         else if (arg == "--depth"   && i+1 < argc) a.depth   = cli_parse_int("--depth",   argv[++i]);
         else if (arg == "--output"  && i+1 < argc) a.output  = argv[++i];
         else if (arg == "--frames"  && i+1 < argc) a.frames  = cli_parse_int("--frames",  argv[++i]);
+        // FIX-11 (D-13): --animate / --timelapse artik taninan bayraklar; mode'u
+        // dogrudan set ediyorlar (Makefile bunlari zaten geciriyor, parse_args
+        // sadece yutmayi birakiyor). --mode'dan SONRA geldikleri icin mode'u en
+        // son onlar belirler -> animate/timelapse kazanir.
+        else if (arg == "--animate")   a.mode = "animate";
+        else if (arg == "--timelapse") a.mode = "timelapse";
+        // FIX-10 (D-05): tanimsiz her bayrak/deger sessizce yutulmak yerine
+        // hard-fail eder — scriptlerdeki/benchmark'lardaki yazim hatalari
+        // artik gizlice kaybolmuyor.
+        else cli_fail("bilinmeyen arguman: " + arg);
     }
 
     // Anlamsal aralik dogrulamasi (FIX-09, D-05). Bu alt sinirlar
@@ -171,6 +181,19 @@ Args parse_args(int argc, char* argv[]) {
     if (a.depth   < 0) cli_fail("--depth negatif olamaz");
     if (a.frames  < 1) cli_fail("--frames en az 1 olmalidir");
     if (a.threads < 1) cli_fail("--threads en az 1 olmalidir");
+
+    // FIX-06 (D-06): --threads N (N > MAX_THREADS) GECERSIZ DEGIL — bugunku sabit
+    // 16-slotluk progress sayaci dizisini (progress.h) asan mesru bir istek. D-05
+    // hard-fail'inin bilincli istisnasi: hard-fail yerine MAX_THREADS'e KIRP + uyar.
+    // Bu kirpma, out-of-bounds yazmayi kapatan sey: ThreadPool::this_thread_idx()
+    // args.threads-1'e kadar index dondurebilir; progress.increment(idx) ve
+    // total_completed() per_thread[MAX_THREADS] dizisini indeksler. threads<=16
+    // olunca mevcut 'idx < args.threads' guard'i progress.h'a dokunmadan guvenli olur.
+    if (a.threads > MAX_THREADS) {
+        std::cerr << "uyari: " << a.threads << " thread istendi, "
+                  << MAX_THREADS << "'e kirpiliyor\n";
+        a.threads = MAX_THREADS;
+    }
 
     return a;
 }
@@ -276,7 +299,12 @@ int main(int argc, char* argv[]) {
         pool.shutdown();
         progress.stop();
 
-    } else if (args.mode == "animate") {
+    } else if (args.mode == "animate" || args.mode == "timelapse") {
+        // FIX-11 (D-13): --timelapse su an --animate ile ayni kare-dizisi yolunu
+        // kullaniyor (ikisi de "tekrarli kare render'i"). Cikti YOLUNUN ayristirilmasi
+        // (frames/ vs output/animation/ vs output/timelapse/) BILINCLI olarak kapsam
+        // disi — Plan 03 (mode dispatch merge) + Plan 04 (scriptler) bunu cozecek.
+        // Buradaki amac sadece bayragin sessizce yutulmamasi ve gecerli is uretmesi.
         std::filesystem::create_directories("frames");
 
         double radius = 3.0;
@@ -346,7 +374,7 @@ int main(int argc, char* argv[]) {
     t_start).count();
     std::cout << "Tamamlandi: " << ms << " ms\n";
       
-    if (args.mode != "animate") {
+    if (args.mode != "animate" && args.mode != "timelapse") {
         writer.save(args.output);
         std::cout << "Kaydedildi: " << args.output << "\n";
     }
