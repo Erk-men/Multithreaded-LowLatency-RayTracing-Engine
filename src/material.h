@@ -17,8 +17,10 @@ class Lambertian : public Material {
 
     Lambertian(const Vec3& a) : albedo(a) {}
 
-    virtual bool scatter(const Ray& ray_in, const HitRecord& rec, 
+    virtual bool scatter(const Ray& /*ray_in*/, const HitRecord& rec,
         Vec3& attenuation, Ray& scattered) const override {
+        // Lambertian saçılması gelen ışına bağlı değil (yalnızca yüzey normali +
+        // rastgele yön); ray_in kasıtlı olarak kullanılmıyor → -Wunused-parameter.
         Vec3 scatter_direction = rec.normal + Vec3::random_unit_vector();
         scattered = Ray(rec.point, scatter_direction);
         attenuation = albedo;
