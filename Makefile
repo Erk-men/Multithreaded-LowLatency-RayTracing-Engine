@@ -29,11 +29,13 @@ animate: all
 	            --output output/animation/frame
 
 timelapse: all
+	@mkdir -p output/timelapse
 	@for t in 1 2 4 6 8 12; do \
-	    rm -f output/timelapse/frame_*.ppm; \
+	    rm -f output/timelapse/frame_*.ppm output/timelapse/frame_*.png; \
 	    ./$(TARGET) --threads $$t --mode pool --timelapse \
 	        --width 1280 --height 720 --samples 16 --depth 5 \
 	        --output /dev/null; \
+	    bash scripts/make_video.sh timelapse $$t; \
 	done
 	ffmpeg -y \
 	    -i output/timelapse/t1.mp4 -i output/timelapse/t2.mp4 \

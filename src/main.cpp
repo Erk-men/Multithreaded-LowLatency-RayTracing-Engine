@@ -288,12 +288,16 @@ int main(int argc, char* argv[]) {
         progress.stop();
 
     } else if (args.mode == "animate" || args.mode == "timelapse") {
-        // FIX-11 (D-13): --timelapse su an --animate ile ayni kare-dizisi yolunu
-        // kullaniyor (ikisi de "tekrarli kare render'i"). Cikti YOLUNUN ayristirilmasi
-        // (frames/ vs output/animation/ vs output/timelapse/) BILINCLI olarak kapsam
-        // disi — Plan 03 (mode dispatch merge) + Plan 04 (scriptler) bunu cozecek.
-        // Buradaki amac sadece bayragin sessizce yutulmamasi ve gecerli is uretmesi.
-        std::filesystem::create_directories("frames");
+        // FIX-13 (D-14, Plan 04): kare cikti yolu artik output/ duzeniyle uyumlu —
+        // eski frames/ yolu birakildi, boylece hicbir script/Makefile hedefi artik
+        // var olmayan bir dizini okumuyor. Ikisi de "tekrarli kare render'i" ama
+        // ciktilari ayri klasorlere gidiyor:
+        //   animate   -> output/animation/frame_*.ppm  (make_video.sh animate stitch)
+        //   timelapse -> output/timelapse/frame_*.ppm  (Makefile timelapse dongusu her
+        //                thread sayisini output/timelapse/t<N>.mp4'e kodlar)
+        const std::string frame_dir =
+            (args.mode == "timelapse") ? "output/timelapse" : "output/animation";
+        std::filesystem::create_directories(frame_dir);
 
         double radius = 3.0;
         double cam_height = 1.0;
@@ -322,13 +326,13 @@ int main(int argc, char* argv[]) {
                 }
             pool.shutdown();
 
-            char fname[64];
-            std::snprintf(fname, sizeof(fname), "frames/frame_%03d.ppm", i);
+            char fname[128];
+            std::snprintf(fname, sizeof(fname), "%s/frame_%03d.ppm", frame_dir.c_str(), i);
             frame_writer.save(fname);
             std::cout << "Kare " << i + 1 << "/" << args.frames << " -> " << fname << "\n";
         }
 
-    } 
+    }
     else if (args.mode == "animate-single") {
     std::filesystem::create_directories("frames");
 
