@@ -5,7 +5,7 @@ TARGET   := raytracer
 T        ?= 6
 OPT      ?= -O2
 
-.PHONY: all debug fast profile run bench animate timelapse plot uml report clean
+.PHONY: all debug fast profile run animate timelapse plot uml clean
 
 all:
 	$(CXX) $(CXXFLAGS) $(OPT) -pthread -o $(TARGET) $(SRC)
@@ -22,9 +22,6 @@ profile:
 run: all
 	./$(TARGET) --threads $(T) --mode pool --width 1280 --height 720 \
 	            --samples 16 --depth 5 --output output/renders/render.ppm
-
-bench:
-	bash scripts/benchmark.sh
 
 animate: all
 	./$(TARGET) --threads $(T) --mode pool --animate \
@@ -53,13 +50,10 @@ timelapse: all
 	    -map "[out]" output/timelapse/timelapse_comparison.mp4
 
 plot:
-	python3 scripts/plot.py
+	python3 scripts/plot_ahmdal.py
 
 uml:
 	java -jar plantuml.jar docs/uml/*.puml
-
-report:
-	cd docs && pdflatex final_report.tex && pdflatex final_report.tex
 
 clean:
 	rm -f $(TARGET) $(TARGET)_debug $(TARGET)_fast $(TARGET)_prof
