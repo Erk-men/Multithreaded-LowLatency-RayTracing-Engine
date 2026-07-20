@@ -1,12 +1,22 @@
 #pragma once
 #include "hittable.h"
 #include <vector>
+#include "aabb.h"
 
 class Scene : public Hittable {
     std::vector<Hittable*> objects; // Sahnedeki tüm nesneleri tutan vektör
 public:
     void add(Hittable* object) { objects.push_back(object); } // Sahneye yeni bir nesne ekler
     
+    AABB bounding_box() const override {
+        // boş sentinel: min = +sonsuz ve max = -sonsuz olarak ayarlanır, böylece herhangi bir nesne eklenirse AABB büyütülür.
+        AABB box; // varsayılan constructor ile sentinel değerleri alır
+        for (Hittable* object : objects) {
+            box.grow(object->bounding_box()); // Her nesnenin AABB'sini büyüt
+        }
+        return box; // Tüm nesneleri kapsayan AABB'yi döndür
+    }
+
     bool hit(const Ray& ray, double t_min, double t_max, HitRecord& rec) const override 
     {
         bool hit_anything = false; // Hiçbir nesneye çarpmadıysa false kalır

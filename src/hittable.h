@@ -1,5 +1,6 @@
 #pragma once
 #include "ray.h"
+#include "aabb.h"
 
 class Material;  // forward declaration — tam tanım material.h'da
 
@@ -16,4 +17,10 @@ struct HitRecord {
         virtual bool hit(const Ray& ray, double t_min, double t_max,
             HitRecord& rec) const = 0;
         virtual ~Hittable() = default;
+
+        // Bounding box (AABB) hesaplaması için saf sanal fonksiyon
+
+        virtual AABB bounding_box() const = 0;
     };
+
+    

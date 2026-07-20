@@ -1,6 +1,7 @@
 #pragma once
 #include "hittable.h"    
 #include "vec3.h"
+#include "aabb.h"
                                                                                         
    
 class Sphere : public Hittable {                                                      
@@ -38,4 +39,9 @@ public:
     rec.mat_ptr = mat_ptr;
     return true;
 }
+
+    // bounding_box() override
+    AABB bounding_box() const override {
+        return AABB(center - Vec3(radius, radius, radius), center + Vec3(radius, radius, radius));
+    }
 };
