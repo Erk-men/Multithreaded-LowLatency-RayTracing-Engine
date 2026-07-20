@@ -21,6 +21,10 @@ public:
     // Bileşen bazlı çarpma: renk × renk hesabında kullanılır (ör: kırmızı yüzey × sarı ışık)
     Vec3 operator*(const Vec3& v) const { return {x*v.x, y*v.y, z*v.z}; }
 
+    // Eksene göre bileşen erişimi: v[0] = x, v[1] = y, v[2] = z, diğer değerler için undefined behavior
+    double operator[](int i) const { return (i == 0) ? x : (i == 1) ? y : z; }
+    
+
     // sqrt() pahalıdır. sadece karşılaştırma için karesi yeterli
     double length_squared() const { return x*x + y*y + z*z; }
     // Gerçek uzunluk: |v| = sqrt(x²+y²+z²)
