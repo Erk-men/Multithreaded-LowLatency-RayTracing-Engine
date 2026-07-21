@@ -16,6 +16,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
+#include <cstdio>
 #include <stdexcept>
 #include <filesystem>
 #include <vector>
@@ -410,6 +411,17 @@ int main(int argc, char* argv[]) {
     double ms  = std::chrono::duration<double, std::milli>(t_end -
     t_start).count();
     std::cout << "Tamamlandi: " << ms << " ms\n";
+
+    fprintf(stderr, "BVH: nodes=%d depth=%d avg_leaf=%.1f build=%ld ms\n", 
+        bvh.stat_nodes(), bvh.stat_depth(), bvh.stat_avg_leaf(), bvh.stat_build_ms());
+
+        fprintf(stderr, "BVH_LEAF_HIST: ");
+        std::vector<int> hist = bvh.leaf_size_histogram();
+        for (std::size_t sz = 0; sz < hist.size(); ++sz) {
+            if (hist[sz] > 0)
+                fprintf(stderr, "%zu:%d ", sz, hist[sz]);
+        }
+        fprintf(stderr, "\n");
       
     if (args.mode != "animate" && args.mode != "timelapse") {
         writer.save(args.output);
