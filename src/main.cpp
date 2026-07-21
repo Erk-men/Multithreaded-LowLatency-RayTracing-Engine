@@ -270,6 +270,7 @@ int main(int argc, char* argv[]) {
     else                              build_scene_complex(scene, mat_zemin,
         mat_orta, mat_sol, mat_sag, mat_ust, spheres, lambertians, metals);
 
+    Bvh bvh(scene.objects_list()); // Sahnedeki nesnelerden BVH oluştur
     PPMWriter writer(cfg.width, cfg.height);
       
     std::cout << "Mode: " << args.mode << " | Scene: " << args.scene
@@ -279,13 +280,13 @@ int main(int argc, char* argv[]) {
     auto t_start = std::chrono::high_resolution_clock::now();
 
     if (args.mode == "single") {
-          render_tile(0, 0, cfg.width, cfg.height, scene, cam, writer, cfg);
+          render_tile(0, 0, cfg.width, cfg.height, bvh, cam, writer, cfg);
 
     } else if (args.mode == "naive") {
         std::thread* threads = new std::thread[cfg.height];
         for (int y = 0; y < cfg.height; ++y)
             threads[y] = std::thread([&, y] {
-                render_tile(0, y, cfg.width, y + 1, scene, cam, writer, cfg);
+                render_tile(0, y, cfg.width, y + 1, bvh, cam, writer, cfg);
             });
         for (int y = 0; y < cfg.height; ++y)
             threads[y].join();
@@ -321,7 +322,7 @@ int main(int argc, char* argv[]) {
                 int x1 = std::min(tx + tile_w, cfg.width);
                 int y1 = std::min(ty + tile_h, cfg.height);
                 pool.submit([&, x0, y0, x1, y1] {
-                    render_tile(x0, y0, x1, y1, scene, cam, writer, cfg);
+                    render_tile(x0, y0, x1, y1, bvh, cam, writer, cfg);
                     int idx = ThreadPool::this_thread_idx();
                     if (idx >= 0 && idx < args.threads)
                     progress.increment(idx);
@@ -365,7 +366,7 @@ int main(int argc, char* argv[]) {
                     int x0 = tx * tile, x1 = std::min(x0 + tile, args.width);
                     int y0 = ty * tile, y1 = std::min(y0 + tile, args.height);
                     pool.submit([&, x0, y0, x1, y1] {
-                        render_tile(x0, y0, x1, y1, scene, cam_frame, frame_writer, frame_cfg);
+                        render_tile(x0, y0, x1, y1, bvh, cam_frame, frame_writer, frame_cfg);
                     });
                 }
             pool.shutdown();
@@ -392,7 +393,7 @@ int main(int argc, char* argv[]) {
         Camera cam_frame(from, at, Vec3(0, 1, 0), 45.0, aspect);
 
         PPMWriter frame_writer(args.width, args.height);
-        render_tile(0, 0, args.width, args.height, scene, cam_frame, frame_writer, frame_cfg);
+        render_tile(0, 0, args.width, args.height, bvh, cam_frame, frame_writer, frame_cfg);
 
         char fname[64];
         std::snprintf(fname, sizeof(fname), "frames/frame_%03d.ppm", i);
