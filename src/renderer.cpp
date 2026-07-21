@@ -48,7 +48,7 @@ long long Renderer::render(const Scene& scene, const Camera& camera, FILE* out) 
 }
 
 void render_tile(int x0, int y0, int x1, int y1,
-                const Scene& scene,
+                const Hittable& world,
                 const Camera& camera,
                 PPMWriter& writer,
                 const RenderConfig& cfg)
@@ -63,7 +63,7 @@ void render_tile(int x0, int y0, int x1, int y1,
                 double u = (i + dist(rng)) / (cfg.width - 1);
                 double v = (j + dist(rng)) / (cfg.height - 1);
                 Ray ray = camera.get_ray(u, v);
-                pixel_color = pixel_color + ray_color(ray, scene,
+                pixel_color = pixel_color + ray_color(ray, world,
 cfg.max_depth);
             }
             Color avg = pixel_color / cfg.samples;

@@ -1,5 +1,6 @@
 #pragma once
 #include "scene.h"
+#include "hittable.h"
 #include "camera.h"
 #include "ppm.h"
 #include <chrono>
@@ -37,7 +38,7 @@ struct RenderConfig {
 constexpr int TILE_SIZE = 64;
 
 void render_tile(int x0, int y0, int x1, int y1,
-                const Scene& scene,
+                const Hittable& world,
                 const Camera& camera,
                 PPMWriter& writer,
                 const RenderConfig& cfg);
