@@ -2,6 +2,8 @@
 #include "Sphere.h"
 #include "scene.h"
 #include "renderer.h"
+#include "bvh.h"
+#include "scene_builders.h"
 #include "material.h"
 #include "ppm.h"
 #include "threadpool.h"
@@ -127,6 +129,7 @@ struct Args {
     int         depth   = 5;  // Işınların maksimum yansıma derinliği
     std::string output  = "output.ppm";
     int         seed    = -1; // -1 = verilmedi, eski deterministik davranis (srand() cagrilmaz) korunur
+    int         count = 1000; // --scene bench/clustered için kaç nesne uretileceği
 };
 
 // -----------------------------------------------------------------------------
@@ -145,7 +148,7 @@ struct Args {
     std::cerr << "hata: " << msg << "\n"
               << "kullanim: raytracer [--threads N] [--mode M] [--scene S] "
                  "[--width W] [--height H] [--samples N] [--depth D] "
-                 "[--output DOSYA] [--frames N] [--animate] [--timelapse] [--seed N]\n";
+                 "[--output DOSYA] [--frames N] [--animate] [--timelapse] [--seed N] [--count N]\n";
     std::exit(1);
 }
 
@@ -182,6 +185,7 @@ Args parse_args(int argc, char* argv[]) {
         else if (arg == "--depth"   && i+1 < argc) a.depth   = cli_parse_int("--depth",   argv[++i]);
         else if (arg == "--output"  && i+1 < argc) a.output  = argv[++i];
         else if (arg == "--seed"    && i+1 < argc) a.seed    = cli_parse_int("--seed", argv[++i]);
+        else if (arg == "--count"   && i+1 < argc) a.count   = cli_parse_int("--count",   argv[++i]);
         else if (arg == "--frames"  && i+1 < argc) a.frames  = cli_parse_int("--frames",  argv[++i]);
         // FIX-11 (D-13): --animate / --timelapse artik taninan bayraklar; mode'u
         // dogrudan set ediyorlar (Makefile bunlari zaten geciriyor, parse_args
@@ -208,7 +212,7 @@ Args parse_args(int argc, char* argv[]) {
     if (a.depth   < 0) cli_fail("--depth negatif olamaz");
     if (a.frames  < 1) cli_fail("--frames en az 1 olmalidir");
     if (a.threads < 1) cli_fail("--threads en az 1 olmalidir");
-
+    if (a.count < 1) cli_fail("--count en az 1 olmalidir");
     // FIX-06 (D-06): --threads N (N > MAX_THREADS) GECERSIZ DEGIL — bugunku sabit
     // 16-slotluk progress sayaci dizisini (progress.h) asan mesru bir istek. D-05
     // hard-fail'inin bilincli istisnasi: hard-fail yerine MAX_THREADS'e KIRP + uyar.
@@ -256,6 +260,13 @@ int main(int argc, char* argv[]) {
         mat_orta, spheres);
     else if (args.scene == "medium")  build_scene_medium(scene, mat_zemin,
         mat_orta, mat_sol, mat_sag, mat_ust, spheres);
+    else if (args.scene == "bench" || args.scene == "clustered") {
+        if (args.scene == "bench") {
+            build_scene_bench(scene, spheres, lambertians, args.count);
+        } else {
+            build_scene_clustered(scene, spheres, lambertians, args.count);
+        }
+    }
     else                              build_scene_complex(scene, mat_zemin,
         mat_orta, mat_sol, mat_sag, mat_ust, spheres, lambertians, metals);
 
