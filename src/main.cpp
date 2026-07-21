@@ -29,6 +29,10 @@
 // => 855 spheres and 850 lambertians. Caps are rounded up with a small margin.
 constexpr std::size_t COMPLEX_SCENE_MAX_SPHERES     = 860;
 constexpr std::size_t COMPLEX_SCENE_MAX_LAMBERTIANS = 850;
+// Materyal cesitliligi (rand()%5==0 -> Metal): en kotu durumda 850 kurenin HEPSI
+// Metal cikabilir (RNG sansina bagli, garanti degil ama teorik olarak mumkun) —
+// reserve() bu ust siniri, "ortalama ~170" gibi beklenen degeri degil, karsilamali.
+constexpr std::size_t COMPLEX_SCENE_MAX_METALS      = 850;
 
 void build_scene_simple(Scene& scene,
                         Lambertian& mat_zemin,
@@ -69,7 +73,8 @@ void build_scene_complex(Scene& scene,
                         Metal& mat_sag,
                         Lambertian& mat_ust,
                         std::vector<Sphere>& spheres,
-                        std::vector<Lambertian>& lambertians) {
+                        std::vector<Lambertian>& lambertians,
+                        std::vector<Metal>& metals) {
     // 855 küre: 5 ana + 850 rastgele dağıtılmış küçük küre
     build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres); // Önce orta sahneyi oluştur
     for (int i = 0; i < 850; ++i) {
@@ -77,11 +82,31 @@ void build_scene_complex(Scene& scene,
         double y = -0.5 + (rand() / (double)RAND_MAX) * 2.0; // -0.5 ile 4.5 arasında rastgele y
         double z = -1.0 - (rand() / (double)RAND_MAX) * 10.0; // -1 ile -11 arasında rastgele z koordinatı
         double r = 0.1 + (rand() / (double)RAND_MAX) * 0.4; // 0.1 ile 0.5 arasında rastgele yarıçap
-        lambertians.push_back(Lambertian(Color(
-            rand() / (double)RAND_MAX, // 0 ile 1 arasında rastgele kırmızı
-            rand() / (double)RAND_MAX, // 0 ile 1 arasında rastgele yeşil
-            rand() / (double)RAND_MAX)));  // 0 ile 1 arasında rastgele mavi
-        spheres.push_back(Sphere(Vec3(x, y, z), r, &lambertians.back())); // Rastgele küre oluştur ve diziye ekle
+
+        // Materyal çeşitliliği: ~%20 ihtimalle Metal (ayna), aksi halde Lambertian (mat).
+        // rand()%5==0 -> [0,5) araliginda 1 deger, yani 850 denemede BEKLENEN ~170 metal
+        // kure — ama bu bir UST SINIR degil, sadece ortalama; RNG sansina gore teorik
+        // olarak 850'sinin de Metal cikmasi mumkun. Bu yuzden `metals` de (asagida,
+        // main()'de) 850'lik BEKLENEN degil, 850'lik EN KOTU DURUM kapasitesiyle
+        // reserve() edilmeli — reserve-before-&element degismezi (main.cpp:22-31,
+        // BVH Pitfall 1 ile ayni ders) burada da gecerli.
+        Material* mat_ptr;
+        if (rand() % 5 == 0) {
+            metals.push_back(Metal(Color(
+                0.5 + (rand() / (double)RAND_MAX) * 0.5, // 0.5-1.0 arasi parlak renkler (ayna icin daha gercekci)
+                0.5 + (rand() / (double)RAND_MAX) * 0.5,
+                0.5 + (rand() / (double)RAND_MAX) * 0.5),
+                rand() / (double)RAND_MAX)); // fuzz: 0.0-1.0 rastgele puruzluluk
+            mat_ptr = &metals.back();
+        } else {
+            lambertians.push_back(Lambertian(Color(
+                rand() / (double)RAND_MAX, // 0 ile 1 arasında rastgele kırmızı
+                rand() / (double)RAND_MAX, // 0 ile 1 arasında rastgele yeşil
+                rand() / (double)RAND_MAX)));  // 0 ile 1 arasında rastgele mavi
+            mat_ptr = &lambertians.back();
+        }
+
+        spheres.push_back(Sphere(Vec3(x, y, z), r, mat_ptr)); // Rastgele küre oluştur ve diziye ekle
         scene.add(&spheres.back()); // Küreyi sahneye ekle
     }
 }
@@ -100,7 +125,8 @@ struct Args {
     int         height  = 720; // Görüntü yüksekliği
     int         samples = 4; // Piksel başına örnek sayısı (antialiasing için)
     int         depth   = 5;  // Işınların maksimum yansıma derinliği
-    std::string output  = "output.ppm"; 
+    std::string output  = "output.ppm";
+    int         seed    = -1; // -1 = verilmedi, eski deterministik davranis (srand() cagrilmaz) korunur
 };
 
 // -----------------------------------------------------------------------------
@@ -119,7 +145,7 @@ struct Args {
     std::cerr << "hata: " << msg << "\n"
               << "kullanim: raytracer [--threads N] [--mode M] [--scene S] "
                  "[--width W] [--height H] [--samples N] [--depth D] "
-                 "[--output DOSYA] [--frames N] [--animate] [--timelapse]\n";
+                 "[--output DOSYA] [--frames N] [--animate] [--timelapse] [--seed N]\n";
     std::exit(1);
 }
 
@@ -155,6 +181,7 @@ Args parse_args(int argc, char* argv[]) {
         else if (arg == "--samples" && i+1 < argc) a.samples = cli_parse_int("--samples", argv[++i]);
         else if (arg == "--depth"   && i+1 < argc) a.depth   = cli_parse_int("--depth",   argv[++i]);
         else if (arg == "--output"  && i+1 < argc) a.output  = argv[++i];
+        else if (arg == "--seed"    && i+1 < argc) a.seed    = cli_parse_int("--seed", argv[++i]);
         else if (arg == "--frames"  && i+1 < argc) a.frames  = cli_parse_int("--frames",  argv[++i]);
         // FIX-11 (D-13): --animate / --timelapse artik taninan bayraklar; mode'u
         // dogrudan set ediyorlar (Makefile bunlari zaten geciriyor, parse_args
@@ -200,32 +227,38 @@ Args parse_args(int argc, char* argv[]) {
 
 
 int main(int argc, char* argv[]) {
-      Args args = parse_args(argc, argv);
-      RenderConfig cfg{args.width, args.height, args.samples, args.depth};
-      // Materyal ve sahne kurulumu (mevcut koddan taşı)
-      // FIX-01 (D-01/D-02): sabit C-dizileri yerine std::vector; Scene non-owning
-      // Hittable* tuttuğu için reallocation'ı önlemek üzere ilk &element alınmadan
-      // ÖNCE reserve() ile kapasite ayrılıyor (belgelenmiş constexpr cap).
-      std::vector<Sphere>     spheres;
-      std::vector<Lambertian> lambertians;
-      spheres.reserve(COMPLEX_SCENE_MAX_SPHERES);
-      lambertians.reserve(COMPLEX_SCENE_MAX_LAMBERTIANS);
-      Lambertian mat_zemin(Color(0.3, 0.7, 0.2));
-      Lambertian mat_orta (Color(0.8, 0.3, 0.3));
-      Lambertian mat_sol  (Color(0.1, 0.2, 0.8));
-      Metal      mat_sag  (Color(0.8, 0.8, 0.8), 0.1);
-      Lambertian mat_ust  (Color(0.8, 0.6, 0.2));
+    Args args = parse_args(argc, argv);
+    // --seed verilmemisse (varsayilan -1) srand() hic cagrilmaz; rand() C standardina
+    // gore hep sabit varsayilan tohumla (1) baslar -> eski deterministik sahne davranisi
+    // (v1-v4 benchmark karsilastirilabilirligi) degismeden korunur.
+    if (args.seed >= 0) srand(static_cast<unsigned>(args.seed));
+    RenderConfig cfg{args.width, args.height, args.samples, args.depth};
+    // Materyal ve sahne kurulumu (mevcut koddan taşı)
+    // FIX-01 (D-01/D-02): sabit C-dizileri yerine std::vector; Scene non-owning
+    // Hittable* tuttuğu için reallocation'ı önlemek üzere ilk &element alınmadan
+    // ÖNCE reserve() ile kapasite ayrılıyor (belgelenmiş constexpr cap).
+    std::vector<Sphere>     spheres;
+    std::vector<Lambertian> lambertians;
+    std::vector<Metal>      metals;
+    spheres.reserve(COMPLEX_SCENE_MAX_SPHERES);
+    lambertians.reserve(COMPLEX_SCENE_MAX_LAMBERTIANS);
+    metals.reserve(COMPLEX_SCENE_MAX_METALS);
+    Lambertian mat_zemin(Color(0.3, 0.7, 0.2));
+    Lambertian mat_orta (Color(0.8, 0.3, 0.3));
+    Lambertian mat_sol  (Color(0.1, 0.2, 0.8));
+    Metal      mat_sag  (Color(0.8, 0.8, 0.8), 0.1);
+    Lambertian mat_ust  (Color(0.8, 0.6, 0.2));
 
-      Scene  scene;
-      Camera cam;
+    Scene  scene;
+    Camera cam;
 
     if      (args.scene == "simple")  build_scene_simple(scene, mat_zemin,
         mat_orta, spheres);
     else if (args.scene == "medium")  build_scene_medium(scene, mat_zemin,
         mat_orta, mat_sol, mat_sag, mat_ust, spheres);
     else                              build_scene_complex(scene, mat_zemin,
-        mat_orta, mat_sol, mat_sag, mat_ust, spheres, lambertians);
-  
+        mat_orta, mat_sol, mat_sag, mat_ust, spheres, lambertians, metals);
+
     PPMWriter writer(cfg.width, cfg.height);
       
     std::cout << "Mode: " << args.mode << " | Scene: " << args.scene
