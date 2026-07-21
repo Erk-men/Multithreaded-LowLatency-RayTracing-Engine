@@ -263,9 +263,9 @@ int main(int argc, char* argv[]) {
         mat_orta, mat_sol, mat_sag, mat_ust, spheres);
     else if (args.scene == "bench" || args.scene == "clustered") {
         if (args.scene == "bench") {
-            build_scene_bench(scene, spheres, lambertians, args.count);
+            build_scene_bench(scene, spheres, lambertians, metals, args.count);
         } else {
-            build_scene_clustered(scene, spheres, lambertians, args.count);
+            build_scene_clustered(scene, spheres, lambertians, metals, args.count);
         }
     }
     else                              build_scene_complex(scene, mat_zemin,
