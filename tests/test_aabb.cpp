@@ -44,6 +44,64 @@ int main() {
     (void)result6; //unused variable warning önlemek için, hangi sonucun doğru olduğunu değil, çökmedini kanıtlıyoruz.
     printf("Test 6 passed: Ray at box1 surface with zero direction, No crash or NaN error\n");
     
+    // Birim kutuların çarpışma testi
+    AABB unitBox1(Point3(0, 0, 0), Point3(1, 1, 1));
+    AABB unitBox2(Point3(0.5, 0.5, 0.5), Point3(1.5, 1.5, 1.5));
+    AABB unitBox3(Point3(2, 2, 2), Point3(3, 3, 3));
+    assert(unitBox1.hit(Ray(Point3(0.5, 0.5, -1), Vec3(0, 0, 1)), 0.0, 1e+9) == true);
+    assert(unitBox2.hit(Ray(Point3(1, 1, -1), Vec3(0, 0, 1)), 0.0, 1e+9) == true);
+    assert(unitBox3.hit(Ray(Point3(2.5, 2.5, -1), Vec3(0, 0, 1)), 0.0, 1e+9) == true);
+    assert(unitBox1.hit(Ray(Point3(1.5, 1.5, -1), Vec3(0, 0, 1)), 0.0, 1e+9) == false);
+    assert(unitBox2.hit(Ray(Point3(2, 2, -1), Vec3(0, 0, 1)), 0.0, 1e+9) == false);
+    assert(unitBox3.hit(Ray(Point3(3.5, 3.5, -1), Vec3(0, 0, 1)), 0.0, 1e+9) == false);
+    printf("Unit box collision tests passed\n");
+
+    // Boş sentinel kutu testi
+    AABB emptyBox;
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(1, 0, 0)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(0, 1, 0)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(0, 0, 1)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(-1, 0, 0)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(0, -1, 0  )), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(0, 0, -1)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(1, 1, 1), Vec3(1, 1, 1)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(-1, -1, -1), Vec3(-1, -1, -1)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0.5, 0.5, 0.5), Vec3(1, 1, 1)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0.5, 0.5, 0.5), Vec3(-1, -1, -1)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(1, 1, 1)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(-1, -1, -1)), 0.0, 1e+9) == false);
+    assert(emptyBox.hit(Ray(Point3(0, 0, 0), Vec3(1, 0, 0)), 0.0, 1e+9) == false); 
+    printf("Empty sentinel box tests passed\n");
+
+
+    // (2, 3, 4) boyutlu kutu (min=(0, 0, 0), max=(2, 3, 4)) ile çarpışma testi
+    AABB boxA(Point3(0, 0, 0), Point3(2, 3, 4));
+    Ray rA(Point3(1, 1, -1), Vec3(0, 0, 1)); // Kutunun önünden gelen
+    assert(boxA.hit(rA, 0.0, 1e+9) == true);
+    Ray rB(Point3(1, 1, 5), Vec3(0, 0, -1)); // Kutunun arkasından gelen
+    assert(boxA.hit(rB, 0.0, 1e+9) == true);
+    Ray rC(Point3(3, 1, 2), Vec3(-1, 0, 0)); // Kutunun sağından gelen
+    assert(boxA.hit(rC, 0.0, 1e+9) == true);
+    Ray rD(Point3(-1, 1, 2), Vec3(1, 0, 0)); // Kutunun solundan gelen
+    assert(boxA.hit(rD, 0.0, 1e+9) == true);
+    Ray rE(Point3(1, 4, 2), Vec3(0, -1, 0)); // Kutunun üstünden gelen
+    assert(boxA.hit(rE, 0.0, 1e+9) == true);
+    Ray rF(Point3(1, -1, 2), Vec3(0, 1, 0)); // Kutunun altından gelen
+    assert(boxA.hit(rF, 0.0, 1e+9) == true);
+    Ray rG(Point3(3, 4, 5), Vec3(-1, -1, -1)); // Kutunun köşesinden gelen
+    assert(boxA.hit(rG, 0.0, 1e+9) == true);
+    printf("BoxA collision tests passed\n");
+
+    //surface_area() testleri
+    assert(box1.surface_area() == 3.0);
+    // birim kutu: 1*1+1*1+1*1
+    AABB emptyForArea;
+    assert(emptyForArea.surface_area() == 0.0);
+    // sentinel/boş kutu koruması
+    assert(boxA.surface_area() == 26.0);
+    // (2,3,4) kutu: 2*3+3*4+4*2
+    printf("surface_area() tests passed\n");
+
     printf("ALL AABB TESTS PASSED\n");
     return 0;
 }

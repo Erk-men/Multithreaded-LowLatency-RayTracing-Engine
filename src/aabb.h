@@ -53,6 +53,13 @@ public:
         return 2;                                          // z ekseni en uzun
     }
 
+    // AABB'nin yarım yüzey alanını hesaplar: (dx*dy + dy*dz + dz*dx)
+    double surface_area() const {
+        Vec3 d = max- min; // AABB'nin boyutlarını hesapla,
+        if (d.x < 0) return 0.0; // negatif boyut, geçersiz AABB, sentinel boş kutu koruması
+        return d.x * d.y + d.y * d.z + d.z * d.x; // yüzey alanı formülü(yarım)
+    }
+
     // AABB'nin bir ışın ile kesişip kesişmediğini kontrol eder.
     bool hit(const Ray& r, double t_min, double t_max) const {
         for (int a = 0; a < 3; a++) {
