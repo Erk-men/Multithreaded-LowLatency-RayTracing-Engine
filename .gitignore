@@ -13,6 +13,7 @@ raytracer_debug
 raytracer_fast
 raytracer_tsan
 raytracer_bench
+raytracer_asan
 raytracer_prof
 raytracer_prof_O0
 raytracer_prof_O2
