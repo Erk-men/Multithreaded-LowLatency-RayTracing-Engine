@@ -76,3 +76,10 @@ __pycache__/
 
 # ── Build klasörü ─────────────────────────────────────────────────
 build/
+
+# ── Geçici/yardımcı build çıktıları ve karşılaştırma binary'leri ──
+raytracer_bruteforce
+output/
+
+# ── Oturum/araç dosyaları ───────────────────────────────────────
+AGENTS.md
