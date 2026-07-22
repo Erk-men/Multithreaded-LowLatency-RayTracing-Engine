@@ -91,6 +91,46 @@ public:
         AABB bounding_box() const override {
             return nodes.empty() ? AABB() : nodes[0].box; // root düğümün kutusunu döndür
     }
+
+    // Instrumented hit() fonksiyonu, ziyaret edilen düğüm sayısını sayar ve istatistiksel amaçlar için döndürür.
+    bool hit_instrumented(const Ray& ray, double t_min, double t_max, HitRecord& rec,
+    long& visited_nodes) const {
+        if (objects.empty()) return false; // Boş sahne için hızlı çıkış
+        int stack[64]; // 64 derinlik, yeterli olmalı
+        int sp = 0; // stack pointer
+        stack[sp++] = 0; // root düğüm index i
+
+        bool hit_anything = false;
+        double closest = t_max;
+        HitRecord temp;
+
+        while (sp > 0) {
+            int idx = stack[--sp]; // stack'ten düğüm index i al(pop)
+            visited_nodes++; // ziyaret edilen düğüm sayısını artır
+
+            if (!nodes[idx].box.hit(ray, t_min, closest)) continue; // Düğümün kutusu ışınla kesişmiyorsa, bu düğümü atla(budama
+            
+        if (nodes[idx].is_leaf()) {
+                for (int k = 0; k < nodes[idx].prim_count; ++k) {
+                    int prim_idx = indices[nodes[idx].left_first + k]; // Yaprak düğümündeki nesne index i
+                    if (objects[prim_idx]->hit(ray, t_min, closest, temp)) {
+                        hit_anything = true;
+                        closest = temp.t; // en yakın çarpışma mesafesini güncelle
+                        rec = temp; // çarpışma kaydını güncelle
+                    }
+                }
+            } else {
+                int lc = nodes[idx].left_first; // sol çocuk index i
+                int rc = lc + 1; // sağ çocuk index i (sol+1)
+                bool near_is_left = ray.direction[nodes[idx].split_axis] >= 0; // near-first traversal için ışının yönü
+                int near = near_is_left ? lc : rc;
+                int far = near_is_left ? rc : lc;
+                stack[sp++] = far; // önce uzak çocuğu ekle, sonra yakın
+                stack[sp++] = near; // yakın çocuğu ekle LIFO
+            }
+        }
+        return hit_anything;
+    }
 };
 
 
