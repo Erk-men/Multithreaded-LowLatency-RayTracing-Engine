@@ -9,7 +9,12 @@
 // constexpr - CLI bayrağı değil, TILE_SIZE/MAX_THREADS deseniyle aynı gerekçe:
 // Deneyle ayarlanabilir ama kullanıcıya sorulmaya değmeyen bir iç uygulama detayyı
 
-constexpr int BVH_LEAF_THRESHOLD = 4; 
+constexpr int BVH_LEAF_THRESHOLD = 4;
+enum class BvhBuild { Median, SAH }; // Median: Ortanca böl, SAH: Yüzey alanı heuristiği ile böl
+constexpr int SAH_BINS = 16; // SAH için histogram bin sayısı,
+constexpr double C_trav = 1.2; // SAH için traversal maliyeti katsayısı, C_trav > 1.0, deneyle ayarlanabilir
+constexpr double C_isect = 1.0; // SAH için intersection maliyeti katsayısı, C_isect > 0.0, deneyle ayarlanabilir
+
 // Node Struct
 struct BVHNode {
     AABB box; // Bu düğümün AABB si
@@ -33,11 +38,12 @@ class Bvh : public Hittable {
         AABB box = objects[prim_idx]->bounding_box();
         return (box.min + box.max) * 0.5; // AABB'nin merkezini döndür
     }
-    void subdivide(int node_idx, int first, int count, int depth); // Düğümü bölmek için yardımcı fonksiyon
+    void subdivide(int node_idx, int first, int count, int depth); // Düğümü bölmek içi
+    void subdivide_sah(int node_idx, int first, int count, int depth); // SAH ile bölme için yardımcı fonksiyon
 
 public:
     // Constructor, BVH'yi oluşturur
-    explicit Bvh(const std::vector<Hittable*>& objs) { 
+    explicit Bvh(const std::vector<Hittable*>& objs, BvhBuild strategy = BvhBuild::Median) {
         objects = objs; // pointer kopyası
 
         if (objects.empty()) {
@@ -51,7 +57,8 @@ public:
         for (int i = 0; i < n; ++i) indices[i] = i; // indices array'ini başlat
         nodes.resize(2 * n-1); // Idiom A: landmine ı yapısal olarak imkansız kılıyor, çünkü her yaprak bir nesne içerir ve her internal düğüm en az 2 çocuğa sahiptir. Bu nedenle, n nesne için en fazla 2n-1 düğüm gerekir.
         auto start = std::chrono::high_resolution_clock::now();
-        subdivide(0, 0, n, 0); // root düğüm, index 0, ilk nesne 0, count = n, depth = 0
+        if (strategy == BvhBuild::SAH) subdivide_sah(0, 0, n, 0); // SAH ile böl
+        else subdivide(0, 0, n, 0); // Ortanca ile böl
         auto end = std::chrono::high_resolution_clock::now();
         build_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
         nodes.resize(nodes_used); // nodes_used kadar düğüm kullanıldı, fazlalıkları kes
@@ -174,6 +181,46 @@ void Bvh::subdivide(int node_idx, int first, int count, int depth) {
     subdivide(right_child_idx, mid, count - count / 2, depth + 1); // sağ çocuk
         
 }
+
+void Bvh::subdivide_sah(int node_idx, int first, int count, int depth) {
+    // 1- Düğümün kutusunu, aralıktaki tüm nesnelerin bounding_box larının birleşimi yap.
+    AABB box;
+    for (int i = first; i < first + count; ++i) 
+        box.grow(objects[indices[i]]->bounding_box());
+    
+    nodes[node_idx].box = box; // Düğümün kutusunu ayarla
+    tree_depth = std::max(tree_depth, depth); // Ağacın derinliğini güncelle
+
+    // 2- Yaprak mı? - Eşik altındaysa dur.
+    if (count <= BVH_LEAF_THRESHOLD) {
+        nodes[node_idx].left_first = first; // Yaprak: indices dizisindeki ilk nesne
+        nodes[node_idx].prim_count = count; // Yaprak: nesne sayısı
+        return;
+    }
+
+    // 3- SAH ile böl: histogram binleri oluştur, her bin için AABB ve yüzey alanı hesapla.
+    AABB centroid_box;
+    for (int i = first; i < first + count; ++i)
+        centroid_box.grow(centroid_of(indices[i]));
+    int axis = centroid_box.longest_axis(); // 0=x, 1=y,
+    int mid = first + count / 2; // Ortanca pivot, SAH ile bölünme için kullanılacak
+    std::nth_element(indices.begin() + first, indices.begin() + mid, indices.begin() + first + count, [this, axis](int a, int b) {
+        return centroid_of(a)[axis] < centroid_of(b)[axis];
+    });
+
+    // 4- SAH ile bölünme: histogram binleri oluştur, her bin için AABB ve yüzey alanı hesapla.
+    int left_child_idx = nodes_used++; // sol çocuk için yeni düğüm
+    int right_child_idx = nodes_used++; // sağ çocuk için yeni düğüm
+    nodes[node_idx].left_first = left_child_idx; // sol çocuğun index i
+    nodes[node_idx].prim_count = 0; // internal düğüm: yaprak
+    nodes[node_idx].split_axis = axis; // bölünme ekseni
+
+    // 5- Özyineleme. node_idx e referans değil, hep nodes[...] indexi kullanıyoruz, çünkü nodes vector'ü yeniden boyutlandırılabilir ve referanslar geçersiz olabilir.
+    subdivide_sah(left_child_idx, first, count / 2, depth + 1); // sol çocuk
+    subdivide_sah(right_child_idx, mid, count - count / 2, depth + 1); // sağ çocuk
+
+}
+
 
 // BVH hit() fonksiyonu, ışının BVH ağacındaki düğümlerle çarpışıp çarpışmadığını kontrol eder.
 bool Bvh::hit(const Ray& ray, double t_min, double t_max, HitRecord& rec) const {
