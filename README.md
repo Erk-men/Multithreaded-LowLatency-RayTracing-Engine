@@ -1,24 +1,42 @@
 # Çok İş Parçacıklı Işın İzleme Motoru
 
-**Enes F. Erkmen — 220309007**  
-Sistem Programlama Dönem Projesi · C++17 · Ubuntu Linux
+**Enes F. Erkmen — 220309007**
+Sistem Programlama Dönem Projesi (tam puanla teslim edildi) → şimdi serbest geliştirme aşamasında · C++17 · Ubuntu Linux
 
 ---
 
 ## Proje Hakkında
 
-Sıfır harici bağımlılıkla, `std::thread` kullanarak geliştirilmiş bir **ray tracing (ışın izleme)** motorudur. Projenin amacı fotorealistik görüntü üretmek **değil**, sistem programlama kavramlarını ölçülebilir biçimde analiz etmektir:
+Sıfır harici bağımlılıkla (yalnızca C++ standart kütüphanesi), `std::thread` kullanarak geliştirilmiş bir **ray tracing (ışın izleme)** motoru. Amaç fotorealistik görüntü üretmek **değil**, sistem/performans mühendisliği kavramlarını ölçülebilir biçimde analiz etmek:
 
 > "Önce naif çözüm → ölç → sorunu gör → düzelt → kanıtla."
 
-Dört versiyon:
+**Ders dönemi (donduruldu, tarihi referans):** tek-thread baseline → thread-per-row (kasıtlı kötü tasarım) → ThreadPool/tile-based → `alignas(64)` cache fix. Ölçümler `results/` ve `docs/final_report*.md`'de.
 
-| Versiyon | Açıklama |
-|----------|----------|
-| **v1** | Tek thread — referans nokta (baseline) |
-| **v2** | Thread-per-row — kasıtlı kötü tasarım, neden yanlış? |
-| **v3** | Thread Pool, tile-based — doğru tasarım |
-| **v4** | `alignas(64)` cache optimizasyonu — düşük seviye iyileştirme |
+**Serbest geliştirme yol haritası (`FIX → BVH → DOD → SIMD → DIST → SCALE`):**
+
+| Faz | İçerik | Durum |
+|---|---|---|
+| 1 | Stabilize & Unify Baseline — bellek/thread güvenliği, CLI sağlamlığı, build/script hijyeni | ✅ Tamamlandı |
+| 2 | BVH Median-Split Baseline — O(log n) closest-hit, flat/index arena | 🔄 Devam ediyor |
+| 3 | BVH SAH + Traversal Tooling | ⏳ |
+| 4 | Data-Oriented Design (SoA + Arena) | ⏳ |
+| 5 | SIMD Vectorization (AVX2) | ⏳ |
+| 6-9 | Dağıtık sistem (TCP master-worker → hata toleransı → epoll/io_uring → render farm) | ⏳ |
+
+Ayrıntılı planlama: `.planning/` (GSD), karar/kavram günlüğü: `docs/engineering_journal.md`.
+
+---
+
+## Faz 2 Öne Çıkan Sonuç — BVH gerçek render yolunda ~419× hızlanma
+
+Aynı 100.000 nesneli sahne, aynı ayarlar, tek fark ışın-kesişim yapısı:
+
+| | Brute-force (`Scene::hit()`, O(n)) | BVH (`Bvh::hit()`, O(log n)) |
+|---|---:|---:|
+| Süre | 9224 ms | **22 ms** |
+
+Ayrıntılı ölçüm raporu (9 sahne, görsel referanslar, Faz 3 taban çizgisi): `docs/bvh_measurements/README.md`.
 
 ---
 
@@ -27,44 +45,75 @@ Dört versiyon:
 ```
 ProjectRayTraycing/
 ├── src/
-│   ├── vec3.h              — 3D vektör / nokta / renk (tek tip)
-│   ├── ray.h               — Parametrik ışın: r(t) = o + t·d
-│   ├── hittable.h          — Soyut nesne arayüzü (hit() metodu)
-│   ├── Sphere.h            — Küre geometrisi, ışın-küre kesişimi
-│   ├── scene.h             — Çoklu nesne sahnesi, en yakın kesişim
-│   ├── camera.h            — Viewport → dünya uzayı, animasyon rotasyonu
-│   ├── material.h          — Lambertian (mat) + Metal (yansımalı)
-│   ├── ppm.h               — PPM P3 formatında çıktı + PPMWriter tamponu
-│   ├── renderer.h/cpp      — v1 tek thread baseline, anti-aliasing, özyinelemeli ışın
-│   ├── renderer_v2.h/cpp   — v2 thread-per-row (naif paralel)
-│   ├── threadpool.h/cpp    — Task queue, mutex, condition_variable
-│   ├── progress.h          — Terminal progress bar (atomic)
-│   └── main.cpp            — Sahne kurulumu, versiyon seçimi, CSV çıktısı
-├── scripts/
-│   ├── benchmark.sh        — 1/2/4/8/16 thread × -O0/-O2/-O3 ölçümü
-│   └── plot.py             — Matplotlib ile performans grafikleri
-├── docs/                   — Tasarım dokümanları, planlar, EN/TR rapor
-├── output/                 — Render edilen görüntüler (.ppm / .png)
-├── results/                — Benchmark CSV dosyaları
+│   ├── vec3.h              — 3D vektör/nokta/renk (operator[] dahil)
+│   ├── ray.h                — Parametrik ışın: r(t) = o + t·d
+│   ├── aabb.h                — Axis-aligned bounding box + NaN-güvenli slab test (Faz 2)
+│   ├── hittable.h           — Soyut arayüz: hit() + bounding_box()
+│   ├── Sphere.h              — Küre geometrisi, ışın-küre kesişimi
+│   ├── scene.h                — Brute-force sahne (D-02: sadece C++-seviyesi test/karşılaştırma referansı)
+│   ├── bvh.h                   — Flat/index BVH: median-split build, near-first pruned traversal (Faz 2)
+│   ├── scene_builders.h        — build_scene_bench/clustered (BVH ölçüm sahneleri, paylaşılan header)
+│   ├── camera.h                 — Viewport → dünya uzayı, animasyon rotasyonu
+│   ├── material.h                — Lambertian (mat) + Metal (yansımalı)
+│   ├── ppm.h                      — PPM P3 çıktı + PPMWriter tamponu
+│   ├── renderer.h/cpp              — render_tile() (const Hittable&, Scene/Bvh ikisiyle de çalışır)
+│   ├── threadpool.h/cpp             — Task queue, mutex, condition_variable
+│   ├── progress.h                    — Terminal progress bar (atomic, cache-aligned)
+│   └── main.cpp                       — CLI, sahne kurulumu, render dispatch
+├── tests/                — test_sphere.cpp, test_aabb.cpp, test_bvh.cpp
+├── scripts/               — make_video.sh, plot_ahmdal.py
+├── docs/                  — engineering_journal.md, final_report*.md (donmuş), bvh_measurements/
+├── .planning/             — GSD planlama katmanı (ROADMAP, REQUIREMENTS, faz planları)
 └── Makefile
 ```
 
+**İki mimari menteşe noktası** (yeni fazlar bunları değiştirmeden eklenir): `Hittable::hit()` (geometri katmanı — `Bvh` burada `Scene`'in yerini alıyor) ve `render_tile()` (yürütme katmanı — dağıtık sistem tile görevini buradan alacak).
+
 ---
 
-## Thread Pool Mimarisi
+## Derleme ve Çalıştırma
 
-Ekran **64×64 piksel tile**'larına bölünür. Her tile bir `Task` olarak `std::queue`'ya eklenir. N adet worker thread sürekli çalışarak kuyruktan tile alır ve render eder.
+```bash
+make            # -O2 ile derle
+make debug      # -O0 -g -fsanitize=thread
+make fast       # -O3
 
+make run T=8              # 8 thread ile render (1280×720, --scene complex)
+make animate T=8           # animasyon kareleri (output/animation/)
+make timelapse              # 1/2/4/6/8/12 thread karşılaştırmalı timelapse
+make plot                    # Amdahl grafiği (scripts/plot_ahmdal.py)
+make clean
 ```
-┌─────────────┐     push      ┌──────────────────┐     pop      ┌──────────────┐
-│  Main Thread │ ──────────►  │  Task Queue       │ ──────────►  │  Worker × N  │
-│  (tile üret) │              │  (mutex korumalı) │              │  (tile render)│
-└─────────────┘              └──────────────────┘              └──────────────┘
-                                    ▲ condition_variable ile uyandır/uyut
+
+**Doğrudan CLI (tüm bayraklar):**
+```bash
+./raytracer --threads 12 --mode pool --scene bench --count 10000 \
+            --width 1280 --height 720 --samples 16 --depth 5 \
+            --output output.ppm [--seed N] [--animate] [--timelapse]
 ```
 
-**Senkronizasyon:** `std::mutex` + `std::condition_variable`  
-**Thread sayısı:** Komut satırından alınır → `make run T=8`
+| Bayrak | Açıklama |
+|---|---|
+| `--scene` | `simple` \| `medium` \| `complex` \| `bench` \| `clustered` (son ikisi `--count` alır, BVH ölçümü için) |
+| `--count N` | `bench`/`clustered` sahnelerinde nesne sayısı (varsayılan 1000) |
+| `--mode` | `single` \| `naive` \| `pool` (ThreadPool, önerilen) \| `animate` \| `animate-single` |
+| `--seed N` | Verilmezse deterministik (eski davranış korunur); verilirse farklı-ama-tekrarlanabilir sahne |
+
+Her render sonunda BVH istatistikleri stderr'e yazılır: `BVH: nodes=... depth=... avg_leaf=... build=... ms` ve `BVH_LEAF_HIST: ...` (yaprak-boyutu dağılımı).
+
+**Gereksinimler:** `g++` (C++17), `ffmpeg` (video için), `python3` + `matplotlib` (grafik için), `convert`/ImageMagick (PPM→PNG).
+
+---
+
+## Testler
+
+```bash
+g++ -std=c++17 -Isrc -Wall -Wextra tests/test_sphere.cpp -o /tmp/t1 && /tmp/t1
+g++ -std=c++17 -Isrc -Wall -Wextra tests/test_aabb.cpp   -o /tmp/t2 && /tmp/t2
+g++ -std=c++17 -Isrc -Wall -Wextra tests/test_bvh.cpp    -o /tmp/t3 && /tmp/t3
+```
+
+`test_bvh.cpp`, `Scene::hit()` (brute-force referans) ile `Bvh::hit()`'i ray/HitRecord seviyesinde karşılaştırır (14 sabit ışın + 64×64 deterministik kamera ışın-ızgarası, RNG yok).
 
 ---
 
@@ -76,7 +125,7 @@ Küre denklemi `|P-C|² = R²`, ışın `P = o + t·d` yerine koyunca:
 t²(d·d) + 2t(d·oc) + (oc·oc - R²) = 0    (oc = o - C)
 ```
 
-`b = 2h` substitüsyonu ile sadeleştirilmiş formül:
+`b = 2h` sadeleştirmesiyle:
 
 ```cpp
 double h            = ray.direction.dot(oc);
@@ -88,110 +137,20 @@ double t            = (-h - sqrt(discriminant)) / a;
 
 ---
 
-## Derleme ve Çalıştırma
+## BVH — Median-Split (Faz 2)
 
-```bash
-make            # -O2 ile derle
-make debug      # -O0 -g (hata ayıklama)
-make fast       # -O3 (maksimum optimizasyon)
+- **Flat/index arena** (`std::vector<BVHNode>`, çocuklar pointer değil `int` index) — `nodes.resize(2n-1)` inşa öncesi tam kapasiteyle ayrılır, inşa boyunca `push_back` hiç çağrılmaz (dangling-referans riskini yapısal olarak ortadan kaldırır).
+- **Build:** `std::nth_element` ile centroid'lerin en geniş yayıldığı eksende ortancaya göre böl (O(n) per düğüm, tam sıralama değil).
+- **Traversal:** iteratif, elle yönetilen yığın; ışının yönüne göre önce geometrik olarak yakın çocuk gezilir, mevcut en-yakın `t` ile budama yapılır.
+- **Doğruluk kanıtı:** `tests/test_bvh.cpp`, C++ seviyesinde, RNG'siz.
 
-make run T=4    # 4 thread ile render (1280×720)
-make bench      # 1/2/4/8/16 thread + tüm -O seviyeleri
-make animate T=8 # animasyon frame'leri
-make plot       # Python performans grafikleri
-make clean
-```
-
-**Gereksinimler:** `g++` (C++17), `ffmpeg`, `python3` + `matplotlib`
-
----
-
-## Ölçülen Metrikler
-
-| Araç | Ölçüm |
-|------|-------|
-| `std::chrono` | Thread başına render süresi |
-| `perf stat` | CPU cycle ve cache miss |
-| `valgrind --tool=helgrind` | Thread güvenliği (data race) |
-| `valgrind --tool=massif` | Bellek profili |
-| `gprof` | Fonksiyon düzeyinde hotspot |
-| Amdahl Yasası | Teorik vs. gerçek hızlanma |
-| Cache alignment | False sharing etkisi |
-
----
-
-## Geliştirme Aşamaları
-
-| # | İçerik | Durum |
-|---|--------|-------|
-| 1 | Vec3 — vektör, nokta, renk matematiği | Tamamlandı |
-| 2 | Ray — parametrik ışın | Tamamlandı |
-| 3 | Hittable — soyut nesne arayüzü | Tamamlandı |
-| 4 | Sphere — ışın-küre kesişim geometrisi + birim testler | Tamamlandı |
-| 5 | PPM, Camera — görüntü çıktısı ve viewport | Tamamlandı |
-| 6 | Scene sistemi, çoklu nesne, materyal, anti-aliasing | Tamamlandı |
-| 7 | Renderer v1 — tek thread baseline + zamanlama | Tamamlandı |
-| 8 | Renderer v2 — thread-per-row (naif paralel) | Tamamlandı |
-| 9 | Renderer v3 — Thread Pool, tile-based | Tamamlandı |
-| 10 | Renderer v4 — `alignas(64)` cache fix | Tamamlandı |
-| 11 | Benchmark + 12 ölçüm (3 sahne × 4 versiyon) + grafikler | Tamamlandı |
-| 12 | EN/TR final rapor + UML diyagramlar | Tamamlandı |
+Ayrıntılı kavram anlatımı ve tüm tasarım kararları: `docs/engineering_journal.md`.
 
 ---
 
 ## Teknik Detaylar
 
-- **Dil:** C++17 · **Derleyici:** g++ · **Platform:** Ubuntu Linux
-- **Thread:** `std::thread` (POSIX uyumlu)
+- **Dil:** C++17 · **Derleyici:** g++ 13.3 · **Platform:** Ubuntu Linux, AMD Ryzen 5 5600X (12 mantıksal çekirdek)
+- **Thread:** `std::thread` + elle yazılmış `ThreadPool` (POSIX uyumlu)
 - **Çıktı formatı:** PPM Plain Text (P3) — sıfır bağımlılık
-- **Çözünürlük:** 1280×720 · **Örnekleme:** 16 ışın/piksel · **Yansıma derinliği:** 5
-
-  make all
-
-  ---
-
-  # v1 — tek thread (yavaş)
-  ./raytracer --threads 1 --mode single --width 1280 --height 720 --samples
-  16 --depth 5 --output output/renders/v1_demo.ppm
-
-  # v4 — 12 thread (hızlı)
-  ./raytracer --threads 12 --mode pool --width 1280 --height 720 --samples
-  16 --depth 5 --output output/renders/v4_demo.ppm
-
-  ---
-  3. Render çıktısını 
-
-  PPM dosyasını açmak için:
-
-  # ImageMagick ile (en kolay):
-  display output/renders/v4_demo.ppm
-
-  # veya PNG'ye çevir, sonra aç:
-  convert output/renders/v4_demo.ppm /tmp/sonuc.png && xdg-open
-  /tmp/sonuc.png
-
-  ---
-  4. Benchmark grafiklerini göster
-
-  xdg-open docs/images/amdahl_speedup.png
-
-  # v1 — tek thread, medium sahne
-  ./raytracer --threads 1 --mode single --scene medium \
-    --width 1280 --height 720 --samples 16 --depth 5 \
-    --output output/renders/v1_demo.ppm
-
-  # v4 — 12 thread, medium sahne (aynı sahne, karşılaştırma için)
-  ./raytracer --threads 12 --mode pool --scene medium \
-    --width 1280 --height 720 --samples 16 --depth 5 \
-    --output output/renders/v4_demo.ppm
-
-
-    # v1 — tek thread, heavy sahne
-  ./raytracer --threads 1 --mode single --scene complex \
-    --width 1280 --height 720 --samples 64 --depth 5 \
-    --output output/renders/v1_heavy.ppm
-
-     # v4 — 12 thread, heavy sahne
-  ./raytracer --threads 12 --mode pool --scene complex \
-    --width 1280 --height 720 --samples 64 --depth 5 \
-    --output output/renders/v4_heavy.ppm
+- **Varsayılan render:** 1280×720 · 4 örnek/piksel (CLI ile ayarlanabilir) · 5 yansıma derinliği
