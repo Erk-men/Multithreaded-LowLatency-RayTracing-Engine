@@ -186,16 +186,24 @@ void Bvh::subdivide(int node_idx, int first, int count, int depth) {
 
 double Bvh::find_best_split_plane(int first, int count, int& axis, double& split_pos) const {
     double bestCost = 1e30; // Başlangıçta çok büyük bir maliyet
+    axis = 0;
+    split_pos = 0.0;
     struct Bin {
         AABB bounds; // Bin'in AABB'si
         int count = 0;
     };
 
+    std::vector<AABB> box_cache(count);
+    std::vector<Point3> centroid_cache(count);
+    for (int i = 0; i < count; ++i) {
+        box_cache[i] = objects[indices[first + i]]->bounding_box();
+        centroid_cache[i] = (box_cache[i].min + box_cache[i].max) * 0.5; // AABB'nin merkezini önbelleğe al
+    }
+
     for(int a = 0; a < 3; ++a) {
         double boundsMin = 1e30, boundsMax = -1e30;
         for(int i = first; i < first + count; ++i) {
-            double c =
-    centroid_of(indices[i])[a];
+            double c = centroid_cache[i-first][a];
             boundsMin = std::min(boundsMin, c);
             boundsMax = std::max(boundsMax, c);
         }
@@ -205,10 +213,10 @@ double Bvh::find_best_split_plane(int first, int count, int& axis, double& split
         Bin bins[SAH_BINS];
         double scale = SAH_BINS / (boundsMax - boundsMin);
         for(int i = first; i < first + count; ++i) {
-            double c = centroid_of(indices[i])[a];
+            double c = centroid_cache[i-first][a];
             int b = std::min(SAH_BINS -1, (int)((c - boundsMin) * scale));
             bins[b].count++;
-            bins[b].bounds.grow(objects[indices[i]]->bounding_box());
+            bins[b].bounds.grow(box_cache[i - first]);    
         }
 
         double leftArea[SAH_BINS - 1], rightArea[SAH_BINS - 1];
@@ -218,7 +226,7 @@ double Bvh::find_best_split_plane(int first, int count, int& axis, double& split
         for (int i = 0; i < SAH_BINS - 1; ++i) {
             leftSum += bins[i].count;
             leftBox.grow(bins[i].bounds);
-            leftCount[i] = leftSum;
+            leftCount[i] = leftSum; 
             leftArea[i] = leftBox.surface_area();
             rightSum += bins[SAH_BINS - 1 - i].count;
             rightBox.grow(bins[SAH_BINS - 1 - i].bounds);
