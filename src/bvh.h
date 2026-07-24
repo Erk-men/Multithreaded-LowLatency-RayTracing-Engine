@@ -41,6 +41,8 @@ class Bvh : public Hittable {
     void subdivide(int node_idx, int first, int count, int depth); // Düğümü bölmek içi
     void subdivide_sah(int node_idx, int first, int count, int depth); // SAH ile bölme için yardımcı fonksiyon
 
+    double find_best_split_plane(int first, int count, int& axis, double& split_pos) const;
+
 public:
     // Constructor, BVH'yi oluşturur
     explicit Bvh(const std::vector<Hittable*>& objs, BvhBuild strategy = BvhBuild::Median) {
@@ -182,6 +184,65 @@ void Bvh::subdivide(int node_idx, int first, int count, int depth) {
         
 }
 
+double Bvh::find_best_split_plane(int first, int count, int& axis, double& split_pos) const {
+    double bestCost = 1e30; // Başlangıçta çok büyük bir maliyet
+    struct Bin {
+        AABB bounds; // Bin'in AABB'si
+        int count = 0;
+    };
+
+    for(int a = 0; a < 3; ++a) {
+        double boundsMin = 1e30, boundsMax = -1e30;
+        for(int i = first; i < first + count; ++i) {
+            double c =
+    centroid_of(indices[i])[a];
+            boundsMin = std::min(boundsMin, c);
+            boundsMax = std::max(boundsMax, c);
+        }
+        if(boundsMin == boundsMax) continue; // Tüm centroidler aynı eksende, bölünemez
+
+
+        Bin bins[SAH_BINS];
+        double scale = SAH_BINS / (boundsMax - boundsMin);
+        for(int i = first; i < first + count; ++i) {
+            double c = centroid_of(indices[i])[a];
+            int b = std::min(SAH_BINS -1, (int)((c - boundsMin) * scale));
+            bins[b].count++;
+            bins[b].bounds.grow(objects[indices[i]]->bounding_box());
+        }
+
+        double leftArea[SAH_BINS - 1], rightArea[SAH_BINS - 1];
+        int leftCount[SAH_BINS - 1], rightCount[SAH_BINS - 1];
+        AABB leftBox, rightBox;
+        int leftSum = 0, rightSum = 0;
+        for (int i = 0; i < SAH_BINS - 1; ++i) {
+            leftSum += bins[i].count;
+            leftBox.grow(bins[i].bounds);
+            leftCount[i] = leftSum;
+            leftArea[i] = leftBox.surface_area();
+            rightSum += bins[SAH_BINS - 1 - i].count;
+            rightBox.grow(bins[SAH_BINS - 1 - i].bounds);
+            rightCount[SAH_BINS - 2 - i] = rightSum;
+            rightArea[SAH_BINS - 2 - i] = rightBox.surface_area();
+        }
+
+        
+        
+        scale = (boundsMax - boundsMin) / SAH_BINS;
+        for (int i = 0; i < SAH_BINS - 1; ++i) {
+            double cost = leftCount[i] * leftArea[i] + rightCount[i] * rightArea[i];
+            if (cost < bestCost) {
+                bestCost = cost;
+                axis = a;
+                split_pos = boundsMin + scale * (i + 1);
+            }
+        }
+        
+        
+    }
+    return bestCost;
+}
+
 void Bvh::subdivide_sah(int node_idx, int first, int count, int depth) {
     // 1- Düğümün kutusunu, aralıktaki tüm nesnelerin bounding_box larının birleşimi yap.
     AABB box;
@@ -262,6 +323,8 @@ bool Bvh::hit(const Ray& ray, double t_min, double t_max, HitRecord& rec) const 
 }
     return hit_anything;
 }
+
+
 
 
      
