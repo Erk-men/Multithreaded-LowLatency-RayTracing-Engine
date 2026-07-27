@@ -40,7 +40,7 @@ TARGET   := raytracer
 T        ?= 6
 OPT      ?= -O2
 
-.PHONY: all debug fast profile run animate timelapse plot uml clean test bench bench-run asan
+.PHONY: all debug fast profile run animate timelapse plot uml clean test bench bench-run bench-refit asan
 
 all:
 	$(CXX) $(CXXFLAGS) $(OPT) -pthread -o $(TARGET) $(SRC)
@@ -132,6 +132,15 @@ bench-run: bench
 	python3 scripts/plot_bvh_scaling.py output/bvh_scaling.csv
 
 # ---------------------------------------------------------------------------
+# bench-refit: bench/bench_refit.cpp'yi -O3 ile derler, $(TARGET)_refit
+# (raytracer_refit) çıktısını üretir — BVH-12'nin refit-vs-rebuild N-sweep
+# testere-dişi CSV'sini (N,frame,sah_cost,avg_visits) stdout'a basar.
+# Kullanım: make bench-refit && ./raytracer_refit > output/refit_sweep.csv
+# ---------------------------------------------------------------------------
+bench-refit:
+	$(CXX) $(CXXFLAGS) -O3 -o $(TARGET)_refit bench/bench_refit.cpp
+
+# ---------------------------------------------------------------------------
 # asan: AddressSanitizer (bellek güvenliği sanitizer'ı) ile ana render
 # hedefini derler. DİKKAT: mevcut "debug" hedefi -fsanitize=thread (TSan,
 # thread'ler arası veri yarışlarını yakalar) kullanıyor — bu FARKLI bir alet,
@@ -151,7 +160,7 @@ asan:
 
 clean:
 	rm -f $(TARGET) $(TARGET)_debug $(TARGET)_fast $(TARGET)_prof
-	rm -f $(TARGET)_O0 $(TARGET)_O2 $(TARGET)_O3 raytracer_tsan raytracer_bench raytracer_asan
+	rm -f $(TARGET)_O0 $(TARGET)_O2 $(TARGET)_O3 raytracer_tsan raytracer_bench raytracer_asan raytracer_refit
 	rm -f output/renders/*.ppm output/renders/*.png
 	rm -f output/animation/frame_*.ppm output/timelapse/frame_*.ppm
 	rm -f output/bvh_scaling.csv
