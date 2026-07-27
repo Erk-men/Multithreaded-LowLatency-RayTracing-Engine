@@ -267,17 +267,41 @@ void Bvh::subdivide_sah(int node_idx, int first, int count, int depth) {
         return;
     }
 
-    // 3- SAH ile böl: histogram binleri oluştur, her bin için AABB ve yüzey alanı hesapla.
-    AABB centroid_box;
-    for (int i = first; i < first + count; ++i)
-        centroid_box.grow(centroid_of(indices[i]));
-    int axis = centroid_box.longest_axis(); // 0=x, 1=y,
-    int mid = first + count / 2; // Ortanca pivot, SAH ile bölünme için kullanılacak
-    std::nth_element(indices.begin() + first, indices.begin() + mid, indices.begin() + first + count, [this, axis](int a, int b) {
-        return centroid_of(a)[axis] < centroid_of(b)[axis];
-    });
+    // find best split plane
+    int axis;
+    double split_pos;
+    double bestCost = find_best_split_plane(first, count, axis, split_pos);
+
+    // 3- Eğer SAH maliyeti, yaprak maliyetinden daha kötü ise, yaprak yap ve dur.
+    double leafCost = count * nodes[node_idx].box.surface_area(); // yaprak maliyeti = nesne sayısı * yüzey alanı
+    if (bestCost >= leafCost) {
+        nodes[node_idx].left_first = first; // Yaprak: indices dizisindeki ilk nesne
+        nodes[node_idx].prim_count = count; // Yaprak: nesne sayısı
+        return;
+    }
+    
 
     // 4- SAH ile bölünme: histogram binleri oluştur, her bin için AABB ve yüzey alanı hesapla.
+
+    auto mid_it = std::partition(
+        indices.begin() + first, 
+        indices.begin() + first + count, 
+        [this, axis, split_pos](int idx) {
+        return centroid_of(idx)[axis] < split_pos;
+    });
+
+    int left_count = mid_it - (indices.begin() + first);
+
+    if (left_count == 0 || left_count == count) {
+        left_count = count / 2; // Eğer tüm nesneler bir tarafa düşerse, ortanca ile böl
+        std::nth_element(indices.begin() + first,
+        indices.begin() + first + left_count,
+        indices.begin() + first + count,
+        [this, axis](int a, int b) {
+        return centroid_of(a)[axis] < centroid_of(b)[axis];
+        });
+    }
+
     int left_child_idx = nodes_used++; // sol çocuk için yeni düğüm
     int right_child_idx = nodes_used++; // sağ çocuk için yeni düğüm
     nodes[node_idx].left_first = left_child_idx; // sol çocuğun index i
@@ -285,8 +309,8 @@ void Bvh::subdivide_sah(int node_idx, int first, int count, int depth) {
     nodes[node_idx].split_axis = axis; // bölünme ekseni
 
     // 5- Özyineleme. node_idx e referans değil, hep nodes[...] indexi kullanıyoruz, çünkü nodes vector'ü yeniden boyutlandırılabilir ve referanslar geçersiz olabilir.
-    subdivide_sah(left_child_idx, first, count / 2, depth + 1); // sol çocuk
-    subdivide_sah(right_child_idx, mid, count - count / 2, depth + 1); // sağ çocuk
+    subdivide_sah(left_child_idx, first, left_count, depth + 1); // sol çocuk
+    subdivide_sah(right_child_idx, first + left_count, count - left_count, depth + 1); // sağ çocuk
 
 }
 
