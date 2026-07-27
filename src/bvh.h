@@ -82,6 +82,20 @@ public:
         return leaf_count > 0 ? (double)sum / leaf_count : 0.0;
     }
 
+    // inşa edilen ağacın nihai sah maliyetini raporlamak
+    double stat_sah_cost() const {
+        double total_cost = 0.0;
+        double root_area = nodes[0].box.surface_area();
+        for (const auto& node : nodes) {
+            if (node.is_leaf()) {
+                total_cost += C_isect * node.prim_count * node.box.surface_area();
+            } else {
+                total_cost += C_trav * node.box.surface_area();
+            }
+        }
+        return root_area > 0.0 ? total_cost / root_area : 0.0; // Normalizasyon: kök kutusunun yüzey alanına böl
+    }
+
     std::vector<int> leaf_size_histogram() const {
         std::vector<int> hist;
         for (const auto& node : nodes) {
