@@ -230,6 +230,19 @@ Args parse_args(int argc, char* argv[]) {
     return a;
 }
 
+//thermal_color (mavi -> cam böceği -> yeşil -> sarı -> kirmizi) renk skalasi: 0.0 (mavi) -> 1.0 (kirmizi)
+
+Color thermal_color(double t) {
+    t = Vec3::clamp(t, 0.0, 1.0); // t'yi [0,1] araligina kirp
+    double r = Vec3::clamp(3.0 * t - 1.5, 0.0, 1.0); // kırmızı bileşen
+    double g = Vec3::clamp(1.0 - 3.0 * std::fabs(t - 0.5), 0.0,1.0); // yeşil bileşen
+    double b = Vec3::clamp(1.5 - 3.0 * t, 0.0, 1.0); // mavi bileşen
+    return Color(r, g, b);
+    
+    
+
+}
+
 
 int main(int argc, char* argv[]) {
     Args args = parse_args(argc, argv);
@@ -279,6 +292,8 @@ int main(int argc, char* argv[]) {
             << " | samples=" << cfg.samples << "\n";
                 
     auto t_start = std::chrono::high_resolution_clock::now();
+
+
 
     if (args.mode == "single") {
           render_tile(0, 0, cfg.width, cfg.height, bvh, cam, writer, cfg);
@@ -402,7 +417,40 @@ int main(int argc, char* argv[]) {
         std::cout << "Kare " << i + 1 << "/" << args.frames << " -> " << fname << "\n";
     }
     
-    } else {
+    } 
+    else if (args.mode == "heatmap") {
+        std::vector<long> visits(cfg.width * cfg.height);
+        long max_visits = 0;
+        for (int j = 0; j < cfg.height; ++j) {
+            for (int i = 0; i < cfg.width; ++i) {
+                double u = (i + 0.5) / cfg.width;
+                double v = (j + 0.5) / cfg.height;
+                Ray ray = cam.get_ray(u, v);
+                HitRecord rec;
+                long visited = 0;
+                bvh.hit_instrumented(ray, 0.001, 1e30, rec, visited);
+                visits[j * cfg.width + i] = visited;
+                max_visits = std::max(max_visits, visited);
+            }
+        }
+
+        if (max_visits == 0) {
+            for(int j = 0; j < cfg.height; ++j) 
+                for (int i = 0; i < cfg.width; ++i) 
+                    writer.set_pixel(i, j, Color(0, 0, 0.2)); // Mavi renk
+        } else {
+            for(int j = 0; j < cfg.height; ++j) {
+                for (int i = 0; i < cfg.width; ++i) {
+                    double t = visits[j * cfg.width + i] / (double)max_visits;
+                    Color c = thermal_color(t);
+                    writer.set_pixel(i, j, c);
+                }            
+            }
+        }
+    }
+
+    
+    else {
         std::cerr << "Bilinmeyen mod: " << args.mode << "\n";
         return 1;
     }
