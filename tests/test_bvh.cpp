@@ -6,6 +6,8 @@
 #include "scene.h"
 #include "bvh.h"
 #include "camera.h"
+#include "scene_builders.h"
+
 
 int main() {
     std::vector<Sphere> spheres;
@@ -23,6 +25,7 @@ int main() {
         objs.push_back(&s);
     }
     Bvh bvh(objs);
+    Bvh bvh_sah(objs, BvhBuild::SAH);
 
     // Sabit ışınlar(RNG yok). Her biri için Scene::hit() ve Bvh::hit() çağrılır ve sonuçlar karşılaştırılır.
     Ray rays[] = {
@@ -43,17 +46,24 @@ int main() {
     };
 
     for (const auto& ray : rays) {
-        HitRecord rec_scene, rec_bvh;
+        HitRecord rec_scene, rec_bvh, rec_bvh_sah;
         bool hit_scene = scene.hit(ray, 0.001, 1e+9, rec_scene);
         bool hit_bvh = bvh.hit(ray, 0.001, 1e+9, rec_bvh);
+        bool hit_bvh_sah = bvh_sah.hit(ray, 0.001, 1e+9, rec_bvh_sah);
 
         assert(hit_scene == hit_bvh);
+        assert(hit_scene == hit_bvh_sah);
         if (hit_scene) {
             assert(std::fabs(rec_scene.t - rec_bvh.t) < 1e-9);
             assert(std::fabs(rec_scene.normal.x - rec_bvh.normal.x) < 1e-9);
             assert(std::fabs(rec_scene.normal.y - rec_bvh.normal.y) < 1e-9);
             assert(std::fabs(rec_scene.normal.z - rec_bvh.normal.z) < 1e-9);
             assert(rec_scene.mat_ptr == rec_bvh.mat_ptr);
+            assert(std::fabs(rec_scene.t - rec_bvh_sah.t) < 1e-9);
+            assert(std::fabs(rec_scene.normal.x - rec_bvh_sah.normal.x) < 1e-9);
+            assert(std::fabs(rec_scene.normal.y - rec_bvh_sah.normal.y) < 1e-9);
+            assert(std::fabs(rec_scene.normal.z - rec_bvh_sah.normal.z) < 1e-9);
+            assert(rec_scene.mat_ptr == rec_bvh_sah.mat_ptr);
         }
     }
     printf("Sabit ışınlar Scene vs Bvh eşdeğer\n");
@@ -66,13 +76,17 @@ int main() {
             double u = (i + 0.5) / W;
             double v = (j + 0.5) / H;
             Ray ray = cam.get_ray(u, v);
-            HitRecord rec_scene, rec_bvh;
+            HitRecord rec_scene, rec_bvh, rec_bvh_sah;
             bool hit_scene = scene.hit(ray, 0.001, 1e+9, rec_scene);
             bool hit_bvh = bvh.hit(ray, 0.001, 1e+9, rec_bvh);
+            bool hit_bvh_sah = bvh_sah.hit(ray, 0.001, 1e+9, rec_bvh_sah);
             assert(hit_scene == hit_bvh);
+            assert(hit_scene == hit_bvh_sah);
             if (hit_scene) {
                 assert(std::fabs(rec_scene.t - rec_bvh.t) < 1e-9);
                 assert(rec_scene.mat_ptr == rec_bvh.mat_ptr);
+                assert(std::fabs(rec_scene.t - rec_bvh_sah.t) < 1e-9);
+                assert(rec_scene.mat_ptr == rec_bvh_sah.mat_ptr);
             }
         }
     }
@@ -85,6 +99,27 @@ int main() {
     printf("BVH derinliği: %d, beklenen <= %.2f\n", bvh.stat_depth(), expected_depth + 3);
 
     printf("BVH yaprak başına ortalama nesne sayısı: %.2f\n", bvh.stat_avg_leaf());
+    assert(bvh_sah.stat_sah_cost() > 0.0); // SAH maliyeti pozitif olmalı
+    assert(std::isfinite(bvh_sah.stat_sah_cost())); // SAH maliyeti sonlu olmalı
+
+
+    Scene clustered_scene;
+    std::vector<Sphere> c_spheres;
+    std::vector<Lambertian> c_lambertians;
+    std::vector<Metal> c_metals;
+    build_scene_clustered(clustered_scene, c_spheres, c_lambertians, c_metals, 1000);
+    std::vector<Hittable*> c_objs;
+    for (auto& s : c_spheres) {
+        c_objs.push_back(&s);
+    }
+    Bvh median_clustered(c_objs, BvhBuild::Median);
+    Bvh sah_clustered(c_objs, BvhBuild::SAH);
+
+    assert(sah_clustered.stat_sah_cost() <= median_clustered.stat_sah_cost()); // SAH maliyeti, median maliyetinden daha iyi olmalı
+    assert(sah_clustered.stat_depth() <= 64); // SAH derinliği, median derinliğinden daha iyi olmalı
+    printf("Clustered sahne için SAH maliyeti: %.4f, Median maliyeti: %.4f\n", sah_clustered.stat_sah_cost(), median_clustered.stat_sah_cost());
+    printf("Clustered sahne için SAH derinliği: %d, Median derinliği: %d\n", sah_clustered.stat_depth(), median_clustered.stat_depth());
+    printf("Clustered sahne için SAH yaprak başına ortalama nesne sayısı: %.2f, Median yaprak başına ortalama nesne sayısı: %.2f\n", sah_clustered.stat_avg_leaf(), median_clustered.stat_avg_leaf());
 
     printf("ALL BVH TESTS PASSED\n");
     return 0;

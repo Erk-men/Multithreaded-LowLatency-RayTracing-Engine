@@ -41,6 +41,7 @@ public:
 
     // AABB'yi bir başka AABB ile büyütür: min ve max köşe noktalarını günceller.
     void grow(const AABB& b) {
+        if (b.min.x > b.max.x) return; // b tamamen bu AABB'nin dışında, büyütmeye gerek yok
         grow(b.min);
         grow(b.max);
     };
