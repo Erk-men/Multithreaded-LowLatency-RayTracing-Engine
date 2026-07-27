@@ -109,6 +109,21 @@ public:
     }
     //hit(), bounding_box(), stat accessorları ve diğer yardımcı fonksiyonlar burada tanımlanabilir 
 
+    void refit() {
+    for (int i= (int)nodes.size() - 1; i >= 0; --i) {
+        if (nodes[i].is_leaf()) {
+            AABB box;
+            for (int k = 0; k < nodes[i].prim_count; ++k)
+                box.grow(objects[indices[nodes[i].left_first + k]]->bounding_box());
+            nodes[i].box = box;
+        } else {
+            AABB box;
+            box.grow(nodes[nodes[i].left_first].box);
+            box.grow(nodes[nodes[i].left_first + 1].box);
+            nodes[i].box = box;
+        }
+    }
+    }
     // Hittable interface override
     bool hit(const Ray& ray, double t_min, double t_max, HitRecord& rec) const override;
         AABB bounding_box() const override {

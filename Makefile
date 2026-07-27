@@ -106,6 +106,7 @@ test:
 	$(CXX) $(CXXFLAGS) -o /tmp/t_aabb tests/test_aabb.cpp && /tmp/t_aabb
 	$(CXX) $(CXXFLAGS) -o /tmp/t_bvh tests/test_bvh.cpp && /tmp/t_bvh
 	$(CXX) $(CXXFLAGS) -o /tmp/t_sphere tests/test_sphere.cpp && /tmp/t_sphere
+	$(CXX) $(CXXFLAGS) -o /tmp/t_refit tests/test_refit.cpp && /tmp/t_refit
 
 # ---------------------------------------------------------------------------
 # bench: bench/bench_bvh.cpp'yi -O3 ile derler, $(TARGET)_bench (raytracer_bench)
