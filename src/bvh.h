@@ -45,7 +45,7 @@ class Bvh : public Hittable {
 
 public:
     // Constructor, BVH'yi oluşturur
-    explicit Bvh(const std::vector<Hittable*>& objs, BvhBuild strategy = BvhBuild::Median) {
+    explicit Bvh(const std::vector<Hittable*>& objs, BvhBuild strategy = BvhBuild::SAH) {
         objects = objs; // pointer kopyası
 
         if (objects.empty()) {
