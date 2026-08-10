@@ -64,6 +64,10 @@ docs/superpowers/
 CLAUDE.md
 sunum.md
 
+# ── İç geliştirme notları / planlama — bu repo'ya girmesin ───────
+docs/
+.planning/
+
 # ── Python cache ──────────────────────────────────────────────────
 __pycache__/
 *.pyc

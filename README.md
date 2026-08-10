@@ -11,7 +11,7 @@ Sıfır harici bağımlılıkla (yalnızca C++ standart kütüphanesi), `std::th
 
 > "Önce naif çözüm → ölç → sorunu gör → düzelt → kanıtla."
 
-**Ders dönemi (donduruldu, tarihi referans):** tek-thread baseline → thread-per-row (kasıtlı kötü tasarım) → ThreadPool/tile-based → `alignas(64)` cache fix. Ölçümler `results/` ve `docs/final_report*.md`'de.
+**Ders dönemi (donduruldu, tarihi referans):** tek-thread baseline → thread-per-row (kasıtlı kötü tasarım) → ThreadPool/tile-based → `alignas(64)` cache fix. Ölçümler `results/`'de.
 
 **Serbest geliştirme yol haritası (`FIX → BVH → DOD → SIMD → DIST → SCALE`):**
 
@@ -24,8 +24,6 @@ Sıfır harici bağımlılıkla (yalnızca C++ standart kütüphanesi), `std::th
 | 5 | SIMD Vectorization (AVX2) | ⏳ |
 | 6-9 | Dağıtık sistem (TCP master-worker → hata toleransı → epoll/io_uring → render farm) | ⏳ |
 
-Ayrıntılı planlama: `.planning/` (GSD), karar/kavram günlüğü: `docs/engineering_journal.md`.
-
 ---
 
 ## Faz 2 Öne Çıkan Sonuç — BVH gerçek render yolunda ~419× hızlanma
@@ -36,7 +34,6 @@ Aynı 100.000 nesneli sahne, aynı ayarlar, tek fark ışın-kesişim yapısı:
 |---|---:|---:|
 | Süre | 9224 ms | **22 ms** |
 
-Ayrıntılı ölçüm raporu (9 sahne, görsel referanslar, Faz 3 taban çizgisi): `docs/bvh_measurements/README.md`.
 
 ---
 
@@ -62,8 +59,6 @@ ProjectRayTraycing/
 │   └── main.cpp                       — CLI, sahne kurulumu, render dispatch
 ├── tests/                — test_sphere.cpp, test_aabb.cpp, test_bvh.cpp
 ├── scripts/               — make_video.sh, plot_ahmdal.py
-├── docs/                  — engineering_journal.md, final_report*.md (donmuş), bvh_measurements/
-├── .planning/             — GSD planlama katmanı (ROADMAP, REQUIREMENTS, faz planları)
 └── Makefile
 ```
 
@@ -143,8 +138,6 @@ double t            = (-h - sqrt(discriminant)) / a;
 - **Build:** `std::nth_element` ile centroid'lerin en geniş yayıldığı eksende ortancaya göre böl (O(n) per düğüm, tam sıralama değil).
 - **Traversal:** iteratif, elle yönetilen yığın; ışının yönüne göre önce geometrik olarak yakın çocuk gezilir, mevcut en-yakın `t` ile budama yapılır.
 - **Doğruluk kanıtı:** `tests/test_bvh.cpp`, C++ seviyesinde, RNG'siz.
-
-Ayrıntılı kavram anlatımı ve tüm tasarım kararları: `docs/engineering_journal.md`.
 
 ---
 
