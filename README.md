@@ -1,7 +1,7 @@
 # Çok İş Parçacıklı Işın İzleme Motoru
 
 **Enes F. Erkmen — 220309007**
-Sistem Programlama Dönem Projesi (tam puanla teslim edildi) → şimdi serbest geliştirme aşamasında · C++17 · Ubuntu Linux
+· C++17 · Ubuntu Linux
 
 ---
 
