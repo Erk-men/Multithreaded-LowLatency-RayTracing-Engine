@@ -1,6 +1,6 @@
 # Çok İş Parçacıklı Işın İzleme Motoru
 
-**Enes F. Erkmen — 220309007**
+**Enes F. Erkmen**
 · C++17 · Ubuntu Linux
 
 ---
@@ -11,7 +11,7 @@ Sıfır harici bağımlılıkla (yalnızca C++ standart kütüphanesi), `std::th
 
 > "Önce naif çözüm → ölç → sorunu gör → düzelt → kanıtla."
 
-**Ders dönemi (donduruldu, tarihi referans):** tek-thread baseline → thread-per-row (kasıtlı kötü tasarım) → ThreadPool/tile-based → `alignas(64)` cache fix. Ölçümler `results/`'de.
+tek-thread baseline → thread-per-row (kasıtlı kötü tasarım) → ThreadPool/tile-based → `alignas(64)` cache fix. Ölçümler `results/`'de.
 
 **Serbest geliştirme yol haritası (`FIX → BVH → DOD → SIMD → DIST → SCALE`):**
 
