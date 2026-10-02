@@ -18,7 +18,7 @@ Each phase must produce a *provable* result ("we measured X, we proved Y"), not 
 
 ### 1. BVH on the real render path: ~418x faster
 
-Same 100,000-object scene (`--scene bench --count 100000`), 128x128, 1 sample per pixel, `--mode single` (one thread), one run each; the only difference is the intersection structure:
+Same 100,000-object scene (`--scene bench --count 100000`), 128x128, 1 sample per pixel, `--mode single` (one thread), one run each; the only difference is the intersection structure. Measured in July 2026 with the **median-split** BVH, before SAH became the default: brute force at `f5b1ecd`, BVH at `399f6f1`. The timer covers rendering only. The one-time BVH build (~80 ms at n=100k) is excluded; including it, this single small frame is ~90x faster end to end, and the build is paid once per scene, not per frame.
 
 | | Brute force (`Scene::hit()`, O(n)) | BVH (`Bvh::hit()`, O(log n)) |
 |---|---:|---:|
@@ -26,7 +26,7 @@ Same 100,000-object scene (`--scene bench --count 100000`), 128x128, 1 sample pe
 
 ### 2. O(n) vs O(log n), measured across four orders of magnitude
 
-A dedicated benchmark (`bench/bench_bvh.cpp`) fires a fixed 200x200 primary-ray grid, with no shading and no RNG, through both paths and times each:
+A dedicated benchmark (`bench/bench_bvh.cpp`) fires a fixed 200x200 primary-ray grid, with no shading and no RNG, through both paths and times each (median-split BVH, one run per n, July 2026):
 
 | n | brute force | BVH | speedup | nodes | depth |
 |---:|---:|---:|---:|---:|---:|
@@ -124,7 +124,7 @@ The lesson behind rows 2–4: a profiling build is for profiling, not for timing
 | 1 | **Stabilize & Unify Baseline**: memory/thread safety, CLI hardening, build & script hygiene, one unified renderer | Complete |
 | 2 | **BVH Median-Split Baseline**: flat index-array BVH, O(log n) closest hit, brute-force parity proof | Complete |
 | 3 | **BVH SAH + Traversal Tooling**: binned SAH build, cost model, traversal heatmap, refit vs rebuild study | Complete |
-| 4 | **Data-Oriented Design**: SoA primitives/materials behind a custom arena allocator, before/after cache-miss proof | Next |
+| 4 | **Data-Oriented Design**: SoA primitives/materials behind a custom arena allocator, before/after cache-miss proof | In progress |
 | 5 | **SIMD Vectorization (AVX2)**: hand-written 4-wide (double-precision AVX2) ray-AABB, scalar parity, verified vectorization, ray packets | Planned |
 | 6 | **Distributed Core**: raw POSIX TCP master-worker, length-prefixed wire protocol, tile as work unit, pull scheduling | Planned |
 | 7 | **Distributed Resilience**: heartbeat/failover, UDP discovery, live monitoring, bandwidth/latency measurement | Planned |
