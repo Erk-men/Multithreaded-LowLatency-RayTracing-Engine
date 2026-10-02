@@ -1,0 +1,5 @@
+BVH: nodes=65535 depth=15 avg_leaf=3.1 build=78 ms
+BVH: nodes=65535 depth=15 avg_leaf=3.1 build=76 ms
+BVH: nodes=65535 depth=15 avg_leaf=3.1 build=76 ms
+BVH: nodes=65535 depth=15 avg_leaf=3.1 build=76 ms
+BVH: nodes=65535 depth=15 avg_leaf=3.1 build=77 ms

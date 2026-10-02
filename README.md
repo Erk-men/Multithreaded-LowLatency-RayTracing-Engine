@@ -16,13 +16,13 @@ Each phase must produce a *provable* result ("we measured X, we proved Y"), not 
 
 ## Results at a Glance
 
-### 1. BVH on the real render path: ~418x faster
+### 1. BVH on the real render path: ~413x faster
 
-Same 100,000-object scene (`--scene bench --count 100000`), 128x128, 1 sample per pixel, `--mode single` (one thread), one run each; the only difference is the intersection structure. Measured in July 2026 with the **median-split** BVH, before SAH became the default: brute force at `f5b1ecd`, BVH at `399f6f1`. The timer covers rendering only. The one-time BVH build (~80 ms at n=100k) is excluded; including it, this single small frame is ~90x faster end to end, and the build is paid once per scene, not per frame.
+Same 100,000-object scene (`--scene bench --count 100000`), 128x128, 1 sample per pixel, `--mode single` (one thread), medians of 5 (brute force) and 10 (BVH) runs; the only difference is the intersection structure. Code: the original July 2026 commits with the **median-split** BVH, before SAH became the default (brute force `f5b1ecd`, BVH `399f6f1`). The timer covers rendering only. The one-time BVH build (76 ms at n=100k) is excluded; including it, this single small frame is ~92x faster, and the build is paid once per scene, not per frame. Raw output: [`results/bvh418/2026-10-02/`](results/bvh418/2026-10-02/README.md).
 
 | | Brute force (`Scene::hit()`, O(n)) | BVH (`Bvh::hit()`, O(log n)) |
 |---|---:|---:|
-| Render time | 9224.37 ms | **22.07 ms** |
+| Render time | 8964.12 ms | **21.69 ms** |
 
 ### 2. O(n) vs O(log n), measured across four orders of magnitude
 
@@ -93,7 +93,7 @@ The sawtooth is real but not a clean monotonic ramp: the sinusoidal motion is pe
 
 ### 6. Threading baseline
 
-Re-measured on 2026-10-02 against the exact course-era code (git worktree at `8ebf4be`), with `perf stat` on normal `-O2` builds. Ryzen 5 5600X, 6 physical / 12 logical cores. Raw output and setup: [`results/remeasure_v1v2/2026-10-02/`](results/remeasure_v1v2/2026-10-02/README.md).
+Re-measured on 2026-10-02 against the exact course-era code (git worktree at `55a48ba`), with `perf stat` on normal `-O2` builds. Ryzen 5 5600X, 6 physical / 12 logical cores. Raw output and setup: [`results/remeasure_v1v2/2026-10-02/`](results/remeasure_v1v2/2026-10-02/README.md).
 
 | Scene | v1 (1 thread) | v2 (thread-per-row) | Speedup | IPC per thread, v1 → v2 |
 |---|---:|---:|---:|---:|

@@ -6,9 +6,10 @@ medium/heavy baselines were measured on `./raytracer_prof_O2`, the gprof build (
 measured on a normal build. The May 2026 raw files are copied, unmodified, into
 [`may2026_originals/`](may2026_originals/) (named `<version>_<scene>_<file>`); see the `Performance counter stats for` line in each.
 
-**Setup:** git worktree at `8ebf4be` (the commit that recorded the v2 heavy measurement), so the code is
-exactly what was measured in May 2026, not today's code. That commit's `main.cpp` selects v1/v2 by
-commenting lines in and out; `main_v1.diff` and `main_medium.diff` show the only edits made. All builds:
+**Setup:** git worktree at `55a48ba` (the commit that recorded the v2 heavy measurement; `8ebf4be` in the
+private development history, identical `src/` tree), so the code is exactly what was measured in May 2026,
+not today's code. That commit's `main.cpp` selects v1/v2 by
+commenting lines in and out; `main_v1.diff`, `main_medium.diff` (v1) and `main_v2_medium.diff` show the only edits made. All builds:
 `g++ -std=c++17 -Isrc -O2 -pthread`, plus `-pg` for the `prof` binaries. Command:
 `perf stat [-r 5] -e task-clock,instructions,cycles ./<binary>`. Ryzen 5 5600X (6C/12T), Linux 6.17.
 
@@ -54,3 +55,23 @@ builds. Re-measured on the same worktree, `-r 3`, `-e task-clock,instructions,cy
   but ran in 134.9 s, which is the non-`-pg` runtime (the same file name ran in 327 s at 08:50 that morning).
   `perf_cache_O3.txt` ran in 346 s (`-pg`). The May counts also include kernel-mode events (no `:u`), so they are
   not comparable with the counts above.
+
+## Reproduce
+
+```bash
+git worktree add --detach ../rt-may2026 55a48ba && cd ../rt-may2026
+cp src/main.cpp main_v2.cpp
+patch -o main_v1.cpp main_v2.cpp < <path-to-this-dir>/main_v1.diff          # selects v1
+patch -o main_v1_medium.cpp main_v1.cpp < <path-to-this-dir>/main_medium.diff  # medium scene
+R="src/renderer.cpp src/renderer_v2.cpp"
+g++ -std=c++17 -Isrc -O2 -pthread -o v2_O2      main_v2.cpp $R
+g++ -std=c++17 -Isrc -O2 -pthread -o v1_O2      main_v1.cpp $R
+g++ -std=c++17 -Isrc -O2 -pthread -pg -o v1_prof_O2 main_v1.cpp $R
+g++ -std=c++17 -Isrc -O3 -pthread -o v1_O3      main_v1.cpp $R
+perf stat -e task-clock,instructions,cycles ./v1_O2     # needs kernel.perf_event_paranoid <= 2
+```
+
+For v2 on the medium scene: `patch -o main_v2_medium.cpp main_v2.cpp < main_v2_medium.diff`. Both medium
+diffs change only the scene call, the renderer arguments (`64, 15` -> `16, 10`) and the output file name.
+These commands were re-run from a clean checkout of the same `src/` tree and all four sources build.
+

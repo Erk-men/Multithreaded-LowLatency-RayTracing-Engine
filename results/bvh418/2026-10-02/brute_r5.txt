@@ -1,0 +1,22 @@
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 8970.97 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 8948.31 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 8949.91 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 9024.7 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 8964.12 ms
+Kaydedildi: /tmp/b.ppm
+
+ Performance counter stats for './12866c7/raytracer --scene bench --count 100000 --width 128 --height 128 --samples 1 --output /tmp/b.ppm' (5 runs):
+
+     8,982,264,769      task-clock:u                     #    1.000 CPUs utilized               ( +-  0.15% )
+
+            8.9839 +- 0.0138 seconds time elapsed  ( +-  0.15% )
+

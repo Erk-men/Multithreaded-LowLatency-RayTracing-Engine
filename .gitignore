@@ -55,6 +55,7 @@ results/**/*.out
 # Kanıt kayıtları (CV/README iddialarının ham verisi) — tutulur
 !results/tsan/**
 !results/remeasure_v1v2/**
+!results/bvh418/**
 # Kanıt kayıtları (CV/README iddialarının ham verisi) — tutulur
 !results/tsan/**
 !results/remeasure_v1v2/**

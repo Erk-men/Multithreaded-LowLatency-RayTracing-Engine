@@ -1,0 +1,37 @@
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.6818 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.703 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.6483 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.6467 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.6419 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.7366 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.6566 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.8448 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.7671 ms
+Kaydedildi: /tmp/b.ppm
+Mode: single | Scene: bench | 128x128 | samples=1
+Tamamlandi: 21.7404 ms
+Kaydedildi: /tmp/b.ppm
+
+ Performance counter stats for './27f16fb/raytracer --scene bench --count 100000 --width 128 --height 128 --samples 1 --output /tmp/b.ppm' (10 runs):
+
+       116,548,257      task-clock:u                     #    0.994 CPUs utilized               ( +-  0.42% )
+
+          0.117205 +- 0.000501 seconds time elapsed  ( +-  0.43% )
+
