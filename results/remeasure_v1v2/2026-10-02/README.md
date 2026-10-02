@@ -46,8 +46,10 @@ builds. Re-measured on the same worktree, `-r 3`, `-e task-clock,instructions,cy
 
 - On normal builds **`-O3` is ~3.1% faster** (medians), with 1.1% fewer instructions and higher IPC.
 - L1-icache misses are about 1 M over ~6x10^11 cycles in both builds: negligible.
-- Under `-pg`, `-O3` is slower (360.5 s vs 354.7 s for `-O2 -pg`, earlier the same day; May: 343.5 s vs 327.4 s).
-  The "`-O3` slower" result only holds for gprof-instrumented builds.
+- Under `-pg`, `-O3` was slower in single runs (360.5 s vs 354.7 s for `-O2 -pg` earlier the same day; May:
+  343.5 s vs 327.4 s). The 1.6% gap is smaller than the 4.5% single-run deviation seen above, so no direction is
+  claimed for `-pg` builds. What is established: the May "`-O3` slower" result does not carry over to normal builds.
+- Run order was O2, O2, O2 then O3, O3, O3; the first O2 run was the outlier. Medians are used for that reason.
 - The May L1-icache comparison mixed builds: `may2026_originals/v1_heavy_perf_cache_O2.txt` names `./raytracer_prof_O2`
   but ran in 134.9 s, which is the non-`-pg` runtime (the same file name ran in 327 s at 08:50 that morning).
   `perf_cache_O3.txt` ran in 346 s (`-pg`). The May counts also include kernel-mode events (no `:u`), so they are
