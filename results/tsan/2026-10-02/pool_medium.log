@@ -1,0 +1,6 @@
+Mode: pool | Scene: medium | 160x90 | samples=2
+[████████████████████] 100.0% — Threads: 12 — Elapsed: 0.2s   BVH: nodes=3 depth=1 avg_leaf=2.5 build=0 ms
+BVH_LEAF_HIST: 1:1 4:1 
+
+Tamamlandi: 202.782 ms
+Kaydedildi: /tmp/tsan_medium.ppm

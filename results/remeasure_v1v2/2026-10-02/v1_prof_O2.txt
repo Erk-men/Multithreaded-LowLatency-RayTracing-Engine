@@ -1,0 +1,15 @@
+Rendering time: 354715 ms
+Render süresi: 354715 ms
+
+ Performance counter stats for './v1_prof_O2':
+
+   354,665,373,652      task-clock:u                     #    1.000 CPUs utilized             
+ 4,680,766,364,104      instructions:u                   #    2.86  insn per cycle            
+ 1,637,969,622,418      cycles:u                         #    4.618 GHz                       
+
+     354.719001783 seconds time elapsed
+
+     354.546834000 seconds user
+       0.114982000 seconds sys
+
+

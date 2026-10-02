@@ -1,0 +1,42 @@
+--- main_v1.cpp	2026-10-02 05:02:47.575621104 +0300
++++ main_v1_medium.cpp	2026-10-02 05:23:29.916248392 +0300
+@@ -81,10 +81,10 @@
+ 
+     // OUTPUT LAR
+     // v1 için
+-    //FILE* out = fopen("output_v1.ppm", "w"); // Render sonucunu output.ppm dosyasına yazmak için dosya açılır
++    //FILE* out = fopen("output_v1_medium.ppm", "w"); // Render sonucunu output.ppm dosyasına yazmak için dosya açılır
+     
+     // v2 için
+-    FILE* out = fopen("output_v1.ppm", "w"); // Render sonucunu output_v2.ppm dosyasına yazmak için dosya açılır
++    FILE* out = fopen("output_v1_medium.ppm", "w"); // Render sonucunu output_v2.ppm dosyasına yazmak için dosya açılır
+ 
+     int width = 1280; // Görüntü genişliği, 16:9 oranına göre hesaplanır
+     int height = static_cast<int>(width / (16.0 / 9.0)); // Görüntü yüksekliği, 16:9 oranına göre hesaplanır
+@@ -94,22 +94,22 @@
+     // BUILD SCENE LER
+ 
+     //build_scene_simple(scene, mat_zemin, mat_orta, spheres, sphere_count); // Basit sahne oluştur
+-    //build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Orta sahne oluştur
+-    build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); // Karmaşık sahne oluştur
++    build_scene_medium(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, sphere_count, spheres); // Orta sahne oluştur
++    //build_scene_complex(scene, mat_zemin, mat_orta, mat_sol, mat_sag, mat_ust, spheres, sphere_count, lambertians, lambertian_count); // Karmaşık sahne oluştur
+     
+     // RENDERERLER 
+ 
+     // RENDERER V1
+ 
+     // Renderer v1 oluştur: 1280x720 , simple için 16 5, medium için 16 10, complex için 64 15 önerilir
+-    Renderer renderer(width, height, 64, 15); 
++    Renderer renderer(width, height, 16, 10); 
+     long long ms = renderer.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
+     fprintf(stderr, "Render süresi: %lld ms\n", ms); // Render süresini standart hataya yaz
+     //fclose(out); // Dosyayı kapat
+ 
+     // RENDERER V2
+     return 0;
+-    RendererV2 renderer_v2(width, height, 64, 15);
++    RendererV2 renderer_v2(width, height, 16, 10);
+     long long ms_v2 = renderer_v2.render(scene, cam, out); // Render işlemini başlat ve sonucu standart çıktıya yaz 
+     fprintf(stderr, "Render süresi (V2): %lld ms\n", ms_v2); // Render süresini standart hataya yaz
+     fclose(out); // Dosyayı kapat

@@ -1,0 +1,6 @@
+Mode: pool | Scene: bench | 160x90 | samples=2
+[████████████████████] 100.0% — Threads: 12 — Elapsed: 0.2s   BVH: nodes=661 depth=11 avg_leaf=3.0 build=25 ms
+BVH_LEAF_HIST: 1:4 2:79 3:154 4:94 
+
+Tamamlandi: 202.733 ms
+Kaydedildi: /tmp/tsan_bench.ppm

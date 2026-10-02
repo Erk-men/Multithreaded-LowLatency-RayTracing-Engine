@@ -1,0 +1,6 @@
+Mode: pool | Scene: complex | 160x90 | samples=2
+[█████████████░░░░░░░] 66.7% — Threads: 12 — Elapsed: 0.2s   [████████████████████] 100.0% — Threads: 12 — Elapsed: 0.4s   BVH: nodes=569 depth=11 avg_leaf=3.0 build=23 ms
+BVH_LEAF_HIST: 1:4 2:64 3:145 4:72 
+
+Tamamlandi: 402.875 ms
+Kaydedildi: /tmp/tsan_complex.ppm

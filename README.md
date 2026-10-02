@@ -16,7 +16,7 @@ Each phase must produce a *provable* result ("we measured X, we proved Y"), not 
 
 ## Results at a Glance
 
-### 1. BVH on the real render path: ~419x faster
+### 1. BVH on the real render path: ~418x faster
 
 Same 100,000-object scene, same settings, the only difference being the intersection structure:
 
@@ -93,16 +93,21 @@ The sawtooth is real but not a clean monotonic ramp: the sinusoidal motion is pe
 
 ### 6. Threading baseline
 
-![Amdahl speedup](assets/images/amdahl_speedup.png)
+Re-measured on 2026-10-02 against the exact course-era code (git worktree at `8ebf4be`), with `perf stat` on normal `-O2` builds. Ryzen 5 5600X, 6 physical / 12 logical cores. Raw output and setup: [`results/remeasure_v1v2/2026-10-02/`](results/remeasure_v1v2/2026-10-02/README.md).
 
-Amdahl's law with `p ~ 0.95` on 6 physical / 12 logical cores. Four findings worth keeping:
+| Scene | v1 (1 thread) | v2 (thread-per-row) | Speedup | IPC per thread, v1 → v2 |
+|---|---:|---:|---:|---:|
+| heavy (200 spheres, 64 spp, depth 15) | 134.9 s | 21.65 s | **6.23x** | 4.26 → 2.29 |
+| medium (5 spheres, 16 spp, depth 10), 5 runs | 4.378 s | 0.641 s | **6.83x** | 2.34 → 1.69 |
 
-| # | Finding | Value |
+| # | Finding | Evidence |
 |---|---|---|
-| 1 | Thread-per-row hit **super-linear** speedup on the heavy scene | 14.93x against a theoretical 12x ceiling, thanks to `thread_local` RNG plus a friendly cache access pattern |
-| 2 | `-O3` was sometimes *slower* than `-O2` | 4.8% slower on the heavy scene, L1-icache misses +206% |
-| 3 | `alignas(64)` false-sharing fix | context switches -70%, but wall clock only -1.8%, since the counter is a tiny slice of the hot path |
-| 4 | Threading *strategy* beats thread *count* | the pool loses on small scenes (queue overhead never amortizes), wins or ties on large ones |
+| 1 | The ceiling is the **6 physical cores**, not the 12 logical ones | Per physical core, v2 retires ~4.51 IPC on heavy vs 4.26 for single-threaded v1: one thread already keeps the core busy, so SMT adds only ~6% |
+| 2 | An earlier **14.93x "super-linear"** figure was a measurement artifact | The v1 baseline had been measured on the gprof (`-pg`) build: same code, **2.63x** slower (heavy) / 1.65x (medium). Instruction counts prove v1 and v2 do identical work (difference: 0.007%) |
+| 3 | `-O3` is **~3.1% faster** than `-O2` on this workload | Median 130.07 s vs 134.24 s over 3 runs, 1.1% fewer instructions, IPC 4.22 → 4.37; L1-icache misses negligible (~1 M) in both. An earlier "`-O3` is slower" result had been measured on gprof builds, where it does hold |
+| 4 | Pool-mode wall-clock timings from this period are quantized to **200 ms** | The timer enclosed `join()` on a progress-bar thread that sleeps in 200 ms steps. Earlier claims built on them (thread pool loses on small scenes; `alignas(64)` saves 1.8% wall clock) are withdrawn. The `alignas(64)` context-switch reduction (-70%) is a counter and still holds |
+
+The lesson behind rows 2–4: a profiling build is for profiling, not for timing; and every timing records which binary was used and what the timer encloses.
 
 ### 7. Sample renders
 
@@ -152,6 +157,8 @@ make clean
 ```
 
 `debug` and `asan` are deliberately separate targets, not one flag added to the other. ThreadSanitizer catches cross-thread data races; AddressSanitizer catches single-threaded memory-safety bugs (buffer overflow, use-after-free). The BVH's flat node arena and the `reserve()`-then-`&element` scene-building pattern are both single-threaded risks that TSan structurally cannot see.
+
+**ThreadSanitizer record:** the thread-pool (12 workers, up to 240 tiles) and thread-per-row renderers ran across all scenes, including a 1000-object BVH scene, with zero TSan reports and every run completing. Logs, commands and a note on the Linux 6.x `unexpected memory mapping` workaround: [`results/tsan/2026-10-02/`](results/tsan/2026-10-02/README.md).
 
 ### CLI
 

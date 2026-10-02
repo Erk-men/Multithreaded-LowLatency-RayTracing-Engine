@@ -1,0 +1,15 @@
+Rendering time: 21650 ms
+Render süresi (V2): 21650 ms
+
+ Performance counter stats for './v2_O2':
+
+   256,245,906,711      task-clock:u                     #   11.835 CPUs utilized             
+ 2,656,025,317,760      instructions:u                   #    2.29  insn per cycle            
+ 1,159,948,302,515      cycles:u                         #    4.527 GHz                       
+
+      21.651760983 seconds time elapsed
+
+     255.932022000 seconds user
+       0.301190000 seconds sys
+
+

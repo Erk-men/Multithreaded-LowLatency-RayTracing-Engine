@@ -1,0 +1,6 @@
+Mode: pool | Scene: bench | 1280x720 | samples=1
+[██░░░░░░░░░░░░░░░░░░] 14.2% — Threads: 12 — Elapsed: 0.2s   [█████░░░░░░░░░░░░░░░] 28.3% — Threads: 12 — Elapsed: 0.4s   [███████░░░░░░░░░░░░░] 36.2% — Threads: 12 — Elapsed: 0.6s   [████████░░░░░░░░░░░░] 42.9% — Threads: 12 — Elapsed: 0.8s   [█████████░░░░░░░░░░░] 48.8% — Threads: 12 — Elapsed: 1.0s   [██████████░░░░░░░░░░] 52.9% — Threads: 12 — Elapsed: 1.2s   [████████████░░░░░░░░] 60.4% — Threads: 12 — Elapsed: 1.4s   [█████████████░░░░░░░] 67.1% — Threads: 12 — Elapsed: 1.6s   [██████████████░░░░░░] 72.5% — Threads: 12 — Elapsed: 1.8s   [████████████████░░░░] 80.0% — Threads: 12 — Elapsed: 2.0s   [█████████████████░░░] 88.3% — Threads: 12 — Elapsed: 2.2s   [███████████████████░] 98.8% — Threads: 12 — Elapsed: 2.4s   [████████████████████] 100.0% — Threads: 12 — Elapsed: 2.6s   BVH: nodes=661 depth=11 avg_leaf=3.0 build=25 ms
+BVH_LEAF_HIST: 1:4 2:79 3:154 4:94 
+
+Tamamlandi: 2604.97 ms
+Kaydedildi: /tmp/tsan_bench_hd.ppm

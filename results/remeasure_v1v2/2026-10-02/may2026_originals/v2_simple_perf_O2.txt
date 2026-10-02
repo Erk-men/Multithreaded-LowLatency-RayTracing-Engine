@@ -1,0 +1,22 @@
+# started on Sun May 31 11:58:07 2026
+
+
+ Performance counter stats for './raytracer_v2_O2':
+
+     2,583,809,616      task-clock                       #    7.492 CPUs utilized             
+             1,326      context-switches                 #  513.196 /sec                      
+               465      cpu-migrations                   #  179.967 /sec                      
+            11,220      page-faults                      #    4.342 K/sec                     
+    20,660,732,829      instructions                     #    1.73  insn per cycle            
+                                                  #    0.01  stalled cycles per insn   
+    11,910,442,479      cycles                           #    4.610 GHz                       
+       196,091,231      stalled-cycles-frontend          #    1.65% frontend cycles idle      
+     2,002,408,971      branches                         #  774.983 M/sec                     
+        22,073,100      branch-misses                    #    1.10% of all branches           
+
+       0.344865294 seconds time elapsed
+
+       2.508428000 seconds user
+       0.089405000 seconds sys
+
+

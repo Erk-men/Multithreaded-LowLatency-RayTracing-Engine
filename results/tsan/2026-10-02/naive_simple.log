@@ -1,0 +1,5 @@
+BVH: nodes=1 depth=0 avg_leaf=2.0 build=0 ms
+BVH_LEAF_HIST: 2:1 
+Mode: naive | Scene: simple | 160x90 | samples=2
+Tamamlandi: 29.4391 ms
+Kaydedildi: /tmp/tsan_naive.ppm

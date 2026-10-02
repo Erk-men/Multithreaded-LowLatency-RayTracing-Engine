@@ -52,6 +52,9 @@ results/**/*.txt
 results/**/*.ppm
 results/**/*.png
 results/**/*.out
+# Kanıt kayıtları (CV/README iddialarının ham verisi) — tutulur
+!results/tsan/**
+!results/remeasure_v1v2/**
 
 # ── Raporlar ve teklif PDF ───────────────────────────────────────
 docs/final_report_tr.pdf

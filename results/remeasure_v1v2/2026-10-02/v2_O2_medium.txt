@@ -1,0 +1,19 @@
+Rendering time: 638 ms
+Render süresi (V2): 638 ms
+Rendering time: 630 ms
+Render süresi (V2): 630 ms
+Rendering time: 628 ms
+Render süresi (V2): 628 ms
+Rendering time: 652 ms
+Render süresi (V2): 652 ms
+Rendering time: 627 ms
+Render süresi (V2): 627 ms
+
+ Performance counter stats for './v2_O2_medium' (5 runs):
+
+     6,143,791,717      task-clock:u                     #    9.583 CPUs utilized               ( +-  0.07% )
+    47,153,776,013      instructions:u                   #    1.69  insn per cycle              ( +-  0.01% )
+    27,846,292,055      cycles:u                         #    4.532 GHz                         ( +-  0.10% )
+
+           0.64110 +- 0.00506 seconds time elapsed  ( +-  0.79% )
+
