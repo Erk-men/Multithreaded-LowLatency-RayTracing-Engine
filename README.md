@@ -18,7 +18,7 @@ Each phase must produce a *provable* result ("we measured X, we proved Y"), not 
 
 ### 1. BVH on the real render path: ~418x faster
 
-Same 100,000-object scene, same settings, the only difference being the intersection structure:
+Same 100,000-object scene (`--scene bench --count 100000`), 128x128, 1 sample per pixel, `--mode single` (one thread), one run each; the only difference is the intersection structure:
 
 | | Brute force (`Scene::hit()`, O(n)) | BVH (`Bvh::hit()`, O(log n)) |
 |---|---:|---:|
@@ -51,7 +51,7 @@ The BVH ships with two build strategies. Binned SAH (16 bins, all axes) is the d
 | 3,000 | 5.32 | 4.90 | 102.93 | 94.36 | 47.57 | 44.21 |
 | 10,000 | 8.77 | 8.08 | 260.33 | 240.66 | 66.43 | 62.45 |
 
-The three axes deliberately do **not** all point the same way. On a *uniform* sphere cloud, SAH's win is small (~5-8% wall clock for n >= 100) and the measured visit count is inconsistent: at n=10 and n=1,000 SAH actually visits *more* nodes. SAH's real advantage shows up on **clustered, irregular** scenes, where its predicted cost is **45% lower** than median-split's at n=1,000. This is a build-quality heuristic, not a universal win, and the numbers are reported as such.
+The three axes deliberately do **not** all point the same way. On a *uniform* sphere cloud, SAH's win is small (~3-8% wall clock for n >= 100, one run per n) and the measured visit count is inconsistent: at n=10 and n=1,000 SAH actually visits *more* nodes. SAH's real advantage shows up on **clustered, irregular** scenes, where its predicted cost is **45% lower** than median-split's at n=1,000. This is a build-quality heuristic, not a universal win, and the numbers are reported as such.
 
 CPU counters tell the same story from a third angle (`--scene bench --count 10000`, fixed seed):
 
@@ -102,7 +102,7 @@ Re-measured on 2026-10-02 against the exact course-era code (git worktree at `8e
 
 | # | Finding | Evidence |
 |---|---|---|
-| 1 | The ceiling is the **6 physical cores**, not the 12 logical ones | Per physical core, v2 retires ~4.51 IPC on heavy vs 4.26 for single-threaded v1: one thread already keeps the core busy, so SMT adds only ~6% |
+| 1 | The ceiling is the **6 physical cores**, not the 12 logical ones | Per physical core, v2 retires an estimated ~4.51 IPC on heavy (instructions / (time x 6 cores x measured clock)) vs 4.26 for single-threaded v1: one thread already keeps the core busy, so SMT adds only ~6% |
 | 2 | An earlier **14.93x "super-linear"** figure was a measurement artifact | The v1 baseline had been measured on the gprof (`-pg`) build: same code, **2.63x** slower (heavy) / 1.65x (medium). Instruction counts prove v1 and v2 do identical work (difference: 0.007%) |
 | 3 | `-O3` is **~3.1% faster** than `-O2` on this workload | Median 130.07 s vs 134.24 s over 3 runs, 1.1% fewer instructions, IPC 4.22 → 4.37; L1-icache misses negligible (~1 M) in both. An earlier "`-O3` is slower" result had been measured on gprof (`-pg`) builds and does not carry over to normal builds |
 | 4 | Pool-mode wall-clock timings from this period are quantized to **200 ms** | The timer enclosed `join()` on a progress-bar thread that sleeps in 200 ms steps. Earlier claims built on them (thread pool loses on small scenes; `alignas(64)` saves 1.8% wall clock) are withdrawn. The `alignas(64)` context-switch reduction (-70%) is a counter and still holds |
@@ -125,7 +125,7 @@ The lesson behind rows 2–4: a profiling build is for profiling, not for timing
 | 2 | **BVH Median-Split Baseline**: flat index-array BVH, O(log n) closest hit, brute-force parity proof | Complete |
 | 3 | **BVH SAH + Traversal Tooling**: binned SAH build, cost model, traversal heatmap, refit vs rebuild study | Complete |
 | 4 | **Data-Oriented Design**: SoA primitives/materials behind a custom arena allocator, before/after cache-miss proof | Next |
-| 5 | **SIMD Vectorization (AVX2)**: hand-written 8-wide ray-AABB, scalar parity, verified vectorization, ray packets | Planned |
+| 5 | **SIMD Vectorization (AVX2)**: hand-written 4-wide (double-precision AVX2) ray-AABB, scalar parity, verified vectorization, ray packets | Planned |
 | 6 | **Distributed Core**: raw POSIX TCP master-worker, length-prefixed wire protocol, tile as work unit, pull scheduling | Planned |
 | 7 | **Distributed Resilience**: heartbeat/failover, UDP discovery, live monitoring, bandwidth/latency measurement | Planned |
 | 8 | **Distributed I/O Evolution**: thread-per-connection to `epoll` to `io_uring`, lock-free master queue | Planned |
@@ -147,7 +147,6 @@ make profile        # -O2 -pg                    (gprof)
 make run T=8        # render 1280x720 with 8 threads
 make animate T=8    # orbit animation frames into output/animation/
 make timelapse      # 1/2/4/6/8/12-thread comparison video
-make plot           # Amdahl speedup chart
 
 make test           # compile + run all four unit-test binaries
 make bench          # build the BVH scaling benchmark
@@ -158,7 +157,7 @@ make clean
 
 `debug` and `asan` are deliberately separate targets, not one flag added to the other. ThreadSanitizer catches cross-thread data races; AddressSanitizer catches single-threaded memory-safety bugs (buffer overflow, use-after-free). The BVH's flat node arena and the `reserve()`-then-`&element` scene-building pattern are both single-threaded risks that TSan structurally cannot see.
 
-**ThreadSanitizer record:** the thread-pool renderer (12 workers, up to 240 tiles) ran on all four scenes, including a 1000-object BVH scene, and the thread-per-row renderer on the simple scene, with zero TSan reports and every run completing (one run per configuration). Logs, commands and a note on the Linux 6.x `unexpected memory mapping` workaround: [`results/tsan/2026-10-02/`](results/tsan/2026-10-02/README.md).
+**ThreadSanitizer record:** the thread-pool renderer (12 workers) ran on all four scenes at 160x90 (6 tiles) and on two scenes, including a 1000-object BVH scene, at 1280x720 (240 tiles); the thread-per-row renderer ran on the simple scene. Zero TSan reports, every run completing, one run per configuration. Logs, commands and a note on the Linux 6.x `unexpected memory mapping` workaround: [`results/tsan/2026-10-02/`](results/tsan/2026-10-02/README.md).
 
 ### CLI
 
@@ -226,7 +225,7 @@ Four standalone binaries, hand-rolled `assert` + `printf`, no framework (the zer
 ## Architecture
 
 ```
-ProjectRayTracing/
+Multithreaded-LowLatency-RayTracing-Engine/
 ├── src/
 │   ├── vec3.h              3D vector / point / color, incl. operator[]
 │   ├── ray.h               parametric ray: r(t) = o + t*d
@@ -311,4 +310,6 @@ The ray-box test is the cheapest possible pre-filter, and its guarantee is absol
 
 - **Read-only shared state needs no lock.** The scene is built before any thread exists and never mutates during the render, so `Scene::hit()` and `Bvh::hit()` are lock-free by construction.
 - **Disjoint write regions need no mutex.** Tile boundaries never overlap, so pixel writes are race-free by design, an invariant maintained by the tiling math rather than by the type system.
-- **No busy waiting.** Workers block on `cv.wait(lock, predicate)`; the predicate guards against spurious wakeups and against the lost-wakeup race (`stop_flag` is always mutated under the mute
+- **No busy waiting.** Workers block on `cv.wait(lock, predicate)`; the predicate guards against spurious wakeups and against the lost-wakeup race (`stop_flag` is always mutated under the mutex, so a worker cannot test the predicate, miss the `notify_all()`, and then sleep forever).
+- **Orderly shutdown.** `shutdown()` sets `stop_flag` under the lock, calls `notify_all()`, then joins every worker. A worker exits only when `stop_flag` is set *and* the queue is empty, so already-submitted tiles are always drained.
+- **No false sharing on progress counters.** Each worker's tile counter is a `std::atomic<int>` padded to its own 64-byte cache line (`alignas(64)`).
